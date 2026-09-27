@@ -61,49 +61,6 @@
     .app-brand img { width: 30px; height: 30px; border-radius: 8px; object-fit: cover; }
     .app-brand span { font-size: 16px; }
 
-    /* ── Nav pills ── */
-    .app-nav {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      background: rgba(255,255,255,.04);
-      border: 1px solid rgba(255,255,255,.07);
-      border-radius: 999px;
-      padding: 4px;
-      overflow-x: auto;
-      scrollbar-width: none;
-    }
-    .app-nav::-webkit-scrollbar { display: none; }
-
-    .nav-pill {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      padding: 7px 14px;
-      border-radius: 999px;
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--muted);
-      text-decoration: none;
-      white-space: nowrap;
-      cursor: pointer;
-      border: none;
-      background: transparent;
-      font-family: inherit;
-      transition: background .15s, color .15s;
-    }
-    .nav-pill:hover { color: #fff; background: rgba(255,255,255,.05); }
-    .nav-pill.active {
-      background: linear-gradient(135deg, var(--gold), #d4891a);
-      color: #000;
-      font-weight: 700;
-    }
-    .nav-pill .dot {
-      width: 6px; height: 6px; border-radius: 50%;
-      background: currentColor; opacity: .5;
-    }
-    .nav-pill.active .dot { opacity: 1; }
-
     /* ── Session chip ── */
     .app-session {
       margin-left: auto;
@@ -224,13 +181,6 @@
       <span>Memelabs</span>
     </a>
 
-    <nav class="app-nav" id="appNav">
-      <a class="nav-pill" data-route="market"    href="#/market"><span class="dot"></span>Market</a>
-      <a class="nav-pill" data-route="login"     href="#/login"><span class="dot"></span>Pre-login</a>
-      <a class="nav-pill" data-route="dashboard" href="#/dashboard"><span class="dot"></span>Dashboard</a>
-      <a class="nav-pill" data-route="payment"   href="#/payment"><span class="dot"></span>Payment</a>
-    </nav>
-
     <div class="app-session" id="appSession"></div>
   </header>
 
@@ -291,7 +241,6 @@
     const frame    = document.getElementById('appFrame');
     const loading  = document.getElementById('appLoading');
     const sessionEl= document.getElementById('appSession');
-    const navEl    = document.getElementById('appNav');
 
     /** Parse "#/payment?amount=2" into { route, query }. */
     function parseHash() {
@@ -316,11 +265,6 @@
 
       frame.src = ROUTES[route](query);
       loading.classList.remove('hide');
-
-      // Highlight the active pill.
-      navEl.querySelectorAll('.nav-pill').forEach(p =>
-        p.classList.toggle('active', p.dataset.route === route)
-      );
 
       refreshSession();
     }
