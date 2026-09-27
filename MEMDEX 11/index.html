@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meme Dex</title>
+  <link rel="shortcut icon" href="assets/images/Favicon%201.png" type="image/x-icon">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ══ 1. TICKER ══ -->
+  <div class="ticker-bar">
+    <div class="ticker-track" id="tickerTrack"></div>
+  </div>
+
+  <!-- ══ 2. HEADER ══ -->
+  <header class="site-header">
+    <div class="header-left">
+      <a href="index.html#" class="site-logo">
+        <img src="./assets/images/Memelabs%20Logo%201.png" alt="Logo">
+        <span class="logo-text">Meme Dex</span>
+      </a>
+      <div class="search-wrap">
+        <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+        </svg>
+        <input type="text" placeholder="Search coins, CA, creators">
+      </div>
+    </div>
+    <div class="header-right">
+      <button class="btn-how">How it works</button>
+      <button class="btn-launch" onclick="location.href='./app.html#/login'">Login</button>
+      <button class="btn-wallet" onclick="location.href='./app.html#/login'">Sign Up</button>
+    </div>
+  </header>
+
+  <!-- ══ 3. HERO ══ -->
+  <section class="hero">
+    <div class="online-counter" id="onlineCounter">
+      <span class="online-dot"></span>
+      <span class="online-count" id="onlineCount">---</span> online
+    </div>
+    <!-- CVT Token Info Bar -->
+    <div class="token-info-bar">
+      <div class="token-info-pill">
+        <img src="assets/images/download.jpeg" onerror="this.src='./assets/images/odai.webp'" class="tip-img" alt="CVT">
+        <span class="tip-label">CVT</span>
+        <span class="tip-divider"></span>
+        <span class="tip-label">Cost</span>
+        <span class="tip-value">$0.001</span>
+        <span class="tip-divider"></span>
+        <span class="tip-label">per token</span>
+      </div>
+      <div class="token-info-pill">
+        <img src="./assets/images/download.jpeg" onerror="this.src='./assets/images/odai.webp'" class="tip-img" alt="CVT">
+        <span class="tip-label">Market Cap</span>
+        <span class="tip-value">$1,000,000</span>
+      </div>
+      <div class="token-info-pill" onclick="openTradeModal('CVT')" style="cursor:pointer;border-color:rgba(245,166,35,0.35);">
+        <span style="font-size:11px;">⚡</span>
+        <span style="color:var(--gold,#f5a623);font-weight:700;">Trade CVT</span>
+      </div>
+    </div>
+
+    <div class="hero-grid">
+
+      <!-- LEFT: 2 stat boxes -->
+      <div class="stat-col">
+        <div class="stat-box">
+          <div class="stat-icon gold-icon"><img src="assets/images/cash.webp" alt="" width="30" height="30"></div>
+          <div class="stat-label">Total creator earnings</div>
+          <div class="stat-value">$2,066,109</div>
+          <div class="claimed-pill">
+            <div class="claimed-avatar"></div>
+            <span>0x0c97...ecE4</span>
+            <span class="claimed-amount">Claimed $3.33</span>
+          </div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-icon green"><img src="assets/images/up.webp" alt="" width="30" height="30"></div>
+          <div class="stat-label">24hr volume</div>
+          <div class="stat-value" id="heroVolume">Loading...</div>
+          <div class="live-badge"><div class="live-dot"></div>Live</div>
+        </div>
+      </div>
+
+      <!-- CENTER: 2x4 coin grid -->
+      <div class="hero-center-box">
+        <div class="box-title">Top earning coins</div>
+        <div class="hero-coins-grid" id="heroCoinsGrid"></div>
+      </div>
+
+      <!-- RIGHT: top volume -->
+      <div class="vol-box">
+        <div class="box-title">Top volume</div>
+        <table class="vol-table">
+          <thead><tr><th>Coin</th><th>MCAP</th><th>24H Vol</th></tr></thead>
+          <tbody id="volTableBody">
+            <tr>
+              <td><div class="vol-coin-cell"><div class="vol-avatar"><img src="assets/images/odai.webp" alt=""></div>ODAI</div></td>
+              <td><div>$7.6M</div><span class="down-badge">↓ 4.7%</span></td>
+              <td><span class="vol-num">$321.0K</span></td>
+            </tr>
+            <tr>
+              <td><div class="vol-coin-cell"><div class="vol-avatar"><img src="assets/images/takeover.webp" alt=""></div>TAKEOVER</div></td>
+              <td><div>$430.6K</div><span class="down-badge">↓ 13.2%</span></td>
+              <td><span class="vol-num">$61.5K</span></td>
+            </tr>
+            <tr>
+              <td><div class="vol-coin-cell"><div class="vol-avatar"><img src="assets/images/oso-_1_.webp" alt=""></div>OSO</div></td>
+              <td><div>$748.4K</div><span class="down-badge">↓ 12.8%</span></td>
+              <td><span class="vol-num">$60.5K</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══ 4. COIN TABLE ══ -->
+  <div class="coin-list-section">
+    <div class="coin-tabs">
+      <button class="coin-tab active"><span class="tab-dot" style="background:#f5a623"></span>Trending</button>
+      <button class="coin-tab"><span class="tab-dot" style="background:#60a5fa"></span>New</button>
+      <button class="coin-tab"><span class="tab-dot" style="background:#34d399"></span>Top</button>
+      <button class="coin-tab"><span class="tab-dot" style="background:#fbbf24"></span>High vol</button>
+    </div>
+    <div class="coins-table-wrap">
+      <table class="coins-table">
+        <thead>
+          <tr>
+            <th>Coin ↕</th>
+            <th>MCAP ↕</th>
+            <th>24H VOL ↕</th>
+            <th>Receivers</th>
+            <th>Earned ↕</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="coinTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ══ 5. FOOTER ══ -->
+  <footer class="site-footer">
+    <div class="footer-left">
+      <div class="theme-toggle" id="themeToggle">
+        <span class="toggle-icon moon">🌙</span>
+        <span class="toggle-icon sun">☀️</span>
+      </div>
+      <nav class="footer-nav">
+        <a href="index.html#">Terms</a>
+        <a href="index.html#">Privacy</a>
+        <a href="index.html#">Docs</a>
+      </nav>
+    </div>
+    <div class="footer-right">
+      <span>Part of the FLAY ecosystem</span>
+      <span class="footer-divider">|</span>
+      <span>A Flayer Labs product</span>
+    </div>
+  </footer>
+
+  <!-- ══ TOKEN SIDE PANEL ══ -->
+  <div class="side-panel-overlay" id="sidePanelOverlay" onclick="closeSidePanel()"></div>
+  <div class="side-panel" id="sidePanel">
+
+    <!-- Header -->
+    <div class="sp-header">
+      <div class="sp-header-left">
+        <img src="./assets/images/odai.webp" alt="" class="sp-token-img" id="spTokenImg">
+        <div>
+          <div class="sp-token-symbol" id="spTokenSymbol">--</div>
+          <div class="sp-token-sub"    id="spTokenSub">--</div>
+        </div>
+      </div>
+      <div class="sp-header-right">
+        <button class="sp-close" onclick="closeSidePanel()">✕</button>
+      </div>
+    </div>
+
+    <!-- Price block -->
+    <div class="sp-price-block">
+      <div class="sp-mcap-label">Market cap</div>
+      <div style="display:flex;align-items:baseline;gap:4px;">
+        <div class="sp-mcap-value" id="spMcap">--</div>
+        <span id="spChange" class="sp-change-pos"></span>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="sp-tabs">
+      <button class="sp-tab active" onclick="setSPTab('trade',this)">Trade</button>
+      <button class="sp-tab"        onclick="setSPTab('info',this)">Info</button>
+      <button class="sp-tab"        onclick="setSPTab('stats',this)">Stats</button>
+    </div>
+
+    <!-- Scrollable content -->
+    <div class="sp-content" id="spContent">
+
+      <!-- TRADE TAB -->
+      <div id="spTradeTab">
+        <!-- Chart -->
+        <div class="sp-timeframes">
+          <button class="sp-tf-btn" onclick="setSPTf(this,'1m')">1m</button>
+          <button class="sp-tf-btn" onclick="setSPTf(this,'15m')">15m</button>
+          <button class="sp-tf-btn active" onclick="setSPTf(this,'1h')">1h</button>
+          <button class="sp-tf-btn" onclick="setSPTf(this,'4h')">4h</button>
+          <button class="sp-tf-btn" onclick="setSPTf(this,'1d')">1d</button>
+        </div>
+        <div class="sp-chart-wrap">
+          <canvas id="spChart"></canvas>
+        </div>
+
+        <!-- Buy/Sell toggle -->
+        <div class="sp-trade-tabs">
+          <button class="sp-trade-tab active-buy"  id="spTabBuy"  onclick="setSPTradeMode('buy')">Buy</button>
+          <button class="sp-trade-tab"              id="spTabSell" onclick="setSPTradeMode('sell')">Sell</button>
+        </div>
+
+        <!-- Amount -->
+        <div class="sp-input-wrap">
+          <span class="sp-dollar">$</span>
+          <input type="number" class="sp-amount-input" id="spAmountInput"
+            placeholder="0" min="0" step="any" oninput="updateSPCalc()">
+        </div>
+
+        <!-- Quick amounts -->
+        <div class="sp-quick">
+          <button class="sp-quick-btn" onclick="setSPQuick(this,10)">$10</button>
+          <button class="sp-quick-btn" onclick="setSPQuick(this,50)">$50</button>
+          <button class="sp-quick-btn" onclick="setSPQuick(this,100)">$100</button>
+          <button class="sp-quick-btn" onclick="setSPQuick(this,500)">$500</button>
+        </div>
+
+        <!-- Calculation -->
+        <div class="sp-receive-box">
+          <div class="sp-receive-row">
+            <span class="sp-receive-label">You pay</span>
+            <span class="sp-receive-val" id="spYouPay">$0.00</span>
+          </div>
+          <div class="sp-receive-row">
+            <span class="sp-receive-label">You receive</span>
+            <span class="sp-receive-highlight" id="spYouReceive">0 tokens</span>
+          </div>
+          <div class="sp-receive-row">
+            <span class="sp-receive-label">Price per token</span>
+            <span class="sp-receive-val" id="spPricePerToken">--</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- INFO TAB -->
+      <div id="spInfoTab" style="display:none;">
+        <div class="sp-stats">
+          <div class="sp-stat-card">
+            <div class="sp-stat-label">Price</div>
+            <div class="sp-stat-value" id="spInfoPrice">--</div>
+          </div>
+          <div class="sp-stat-card">
+            <div class="sp-stat-label">24h Change</div>
+            <div class="sp-stat-value" id="spInfoChange">--</div>
+          </div>
+          <div class="sp-stat-card">
+            <div class="sp-stat-label">24h Volume</div>
+            <div class="sp-stat-value" id="spInfoVol">--</div>
+          </div>
+          <div class="sp-stat-card">
+            <div class="sp-stat-label">Market Cap</div>
+            <div class="sp-stat-value" id="spInfoMcap">--</div>
+          </div>
+        </div>
+        <div class="sp-stat-card" style="margin-bottom:10px;">
+          <div class="sp-stat-label">Contract Address</div>
+          <div class="sp-stat-value" id="spInfoCA" style="font-size:11px;word-break:break-all;color:rgba(255,255,255,0.6);margin-top:4px;">--</div>
+        </div>
+        <div class="sp-stat-card">
+          <div class="sp-stat-label">Chain</div>
+          <div class="sp-stat-value" id="spInfoChain">--</div>
+        </div>
+      </div>
+
+      <!-- STATS TAB -->
+      <div id="spStatsTab" style="display:none;">
+        <div class="sp-stats">
+          <div class="sp-stat-card">
+            <div class="sp-stat-label">Earned (est.)</div>
+            <div class="sp-stat-value" id="spStatsEarned">--</div>
+          </div>
+          <div class="sp-stat-card">
+            <div class="sp-stat-label">24h Vol</div>
+            <div class="sp-stat-value" id="spStatsVol">--</div>
+          </div>
+          <div class="sp-stat-card">
+            <div class="sp-stat-label">FDV</div>
+            <div class="sp-stat-value" id="spStatsFDV">--</div>
+          </div>
+          <div class="sp-stat-card">
+            <div class="sp-stat-label">Receivers</div>
+            <div class="sp-stat-value" id="spStatsReceiver" style="font-size:11px;">--</div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- end sp-content -->
+
+    <!-- Footer buy/sell buttons -->
+    <div class="sp-footer">
+      <button class="sp-sell-btn" onclick="setSPTradeMode('sell');document.getElementById('spAmountInput').focus()">Sell</button>
+      <button class="sp-buy-btn"  onclick="setSPTradeMode('buy');document.getElementById('spAmountInput').focus()">Buy</button>
+    </div>
+
+  </div><!-- end side-panel -->
+
+  <!-- ══ TRADE MODAL ══ -->
+  <div class="modal-overlay" id="tradeModal" style="display:none;" onclick="handleModalOverlayClick(event)">
+    <div class="modal-box">
+
+      <div class="modal-header">
+        <div class="modal-title">
+          <img src="./assets/images/odai.webp" alt="" class="modal-token-img" id="modalTokenImg">
+          <div>
+            <div class="modal-token-name" id="modalTokenName">Token</div>
+            <div class="modal-token-price" id="modalTokenPrice">$0.00</div>
+          </div>
+        </div>
+        <button class="modal-close" onclick="closeTradeModal()">✕</button>
+      </div>
+
+      <!-- Buy / Sell tabs -->
+      <div class="modal-tabs">
+        <button class="modal-tab active-buy" id="tabBuy" onclick="setModalTab('buy')">Buy</button>
+        <button class="modal-tab" id="tabSell" onclick="setModalTab('sell')">Sell</button>
+      </div>
+
+      <!-- Amount input -->
+      <div class="modal-label">Amount (USD)</div>
+      <div class="modal-input-wrap">
+        <span class="modal-currency">$</span>
+        <input
+          type="number"
+          class="modal-amount-input"
+          id="modalAmountInput"
+          placeholder="0"
+          min="0"
+          step="any"
+          oninput="updateModalCalc()"
+        >
+      </div>
+
+      <!-- Quick amounts -->
+      <div class="modal-quick">
+        <button class="modal-quick-btn" onclick="setQuickAmount(10)">$10</button>
+        <button class="modal-quick-btn" onclick="setQuickAmount(50)">$50</button>
+        <button class="modal-quick-btn" onclick="setQuickAmount(100)">$100</button>
+        <button class="modal-quick-btn" onclick="setQuickAmount(500)">$500</button>
+      </div>
+
+      <!-- Balance / calculation box -->
+      <div class="modal-balance-box">
+        <div class="modal-balance-row">
+          <span class="modal-balance-label">You pay</span>
+          <span class="modal-balance-value" id="modalYouPay">$0.00</span>
+        </div>
+        <div class="modal-balance-row">
+          <span class="modal-balance-label">You receive</span>
+          <span class="modal-balance-highlight" id="modalYouReceive">0 tokens</span>
+        </div>
+        <div class="modal-balance-row">
+          <span class="modal-balance-label">Token price</span>
+          <span class="modal-balance-value" id="modalPricePerToken">--</span>
+        </div>
+      </div>
+
+      <!-- Slippage -->
+      <div class="modal-slippage">
+        Max slippage: <span onclick="alert('Slippage settings coming soon!')">0.50% ∨</span>
+      </div>
+
+      <!-- Action button -->
+      <button class="modal-action-btn connect-btn" id="modalActionBtn" onclick="handleModalAction()">
+        Connect wallet
+      </button>
+
+    </div>
+  </div>
+<!--Start of Tawk.to Script-->
+<script type="text/javascript">
+var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+(function(){
+var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+s1.async=true;
+s1.src='https://embed.tawk.to/69ef04d5f7613d1c38f451f3/1jn6qlpnc';
+s1.charset='UTF-8';
+s1.setAttribute('crossorigin','*');
+s0.parentNode.insertBefore(s1,s0);
+})();
+</script>
+<!--End of Tawk.to Script-->
+  <script src="main.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

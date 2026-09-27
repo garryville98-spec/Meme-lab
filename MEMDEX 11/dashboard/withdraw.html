@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Memelabs — Withdraw</title>
+  <link rel="shortcut icon" href="../assets/images/Favicon&#32;1.png" type="image/x-icon">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/trade.css">
+  <!-- Auth & Mock Data -->
+  <script src="../auth.js"></script>
+  <script src="api/mockData.js"></script>
+   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+  <style>
+
+    /* ── ERROR MODAL ── */
+    .wd-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.78);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      z-index: 10000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .wd-overlay.show { display: flex; }
+
+    .wd-card {
+      background: #100e04;
+      border: 1px solid rgba(248,113,113,.25);
+      border-radius: 22px;
+      width: 100%;
+      max-width: 400px;
+      overflow: hidden;
+      animation: wdSlide .22s ease;
+    }
+    @keyframes wdSlide { from { transform: translateY(22px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+    .wd-top {
+      padding: 28px 24px 20px;
+      text-align: center;
+      border-bottom: 1px solid rgba(255,255,255,.06);
+    }
+    .wd-icon-wrap {
+      width: 64px; height: 64px;
+      border-radius: 50%;
+      background: rgba(248,113,113,.1);
+      border: 1px solid rgba(248,113,113,.25);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 16px;
+      font-size: 28px;
+    }
+    .wd-title {
+      font-size: 19px;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 8px;
+    }
+    .wd-msg {
+      font-size: 13px;
+      color: rgba(255,255,255,.45);
+      line-height: 1.6;
+    }
+    .wd-msg strong {
+      color: rgba(255,255,255,.75);
+      font-weight: 600;
+    }
+
+    .wd-body { padding: 18px 24px 24px; display: flex; flex-direction: column; gap: 10px; }
+
+    .wd-support-btn {
+      width: 100%;
+      padding: 15px;
+      border: none;
+      border-radius: 999px;
+      font-size: 15px;
+      font-weight: 800;
+      font-family: 'DM Sans', sans-serif;
+      cursor: pointer;
+      background: linear-gradient(135deg, #f5a623, #d4891a);
+      color: #000;
+      box-shadow: 0 4px 20px rgba(245,166,35,.3);
+      transition: all .15s;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .wd-support-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(245,166,35,.4); }
+    .wd-support-btn:active { transform: scale(.98); }
+
+    .wd-cancel-btn {
+      width: 100%;
+      padding: 13px;
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 700;
+      font-family: 'DM Sans', sans-serif;
+      cursor: pointer;
+      background: rgba(255,255,255,.05);
+      color: rgba(255,255,255,.5);
+      transition: all .15s;
+    }
+    .wd-cancel-btn:hover { background: rgba(255,255,255,.09); color: rgba(255,255,255,.8); }
+
+    /* ── WITHDRAW PAGE CONTENT ── */
+    .wd-page-card {
+      background: rgba(255,255,255,.03);
+      border: 1px solid rgba(255,255,255,.07);
+      border-radius: 20px;
+      padding: 32px;
+      max-width: 520px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    .wd-page-icon {
+      width: 72px; height: 72px;
+      border-radius: 50%;
+      background: rgba(245,166,35,.08);
+      border: 1px solid rgba(245,166,35,.2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 30px;
+      margin: 0 auto 20px;
+    }
+    .wd-page-title { font-size: 22px; font-weight: 800; margin-bottom: 8px; }
+    .wd-page-sub   { font-size: 13px; color: rgba(255,255,255,.45); line-height: 1.6; margin-bottom: 28px; }
+
+    .wd-form-group { margin-bottom: 14px; text-align: left; }
+    .wd-label {
+      display: block;
+      font-size: 10px;
+      font-weight: 700;
+      color: rgba(255,255,255,.4);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      margin-bottom: 8px;
+    }
+    .wd-input {
+      width: 100%;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(245,166,35,.2);
+      border-radius: 12px;
+      padding: 14px 16px;
+      font-size: 15px;
+      font-weight: 600;
+      color: #fff;
+      font-family: 'DM Sans', sans-serif;
+      outline: none;
+      box-sizing: border-box;
+      transition: border-color .2s;
+    }
+    .wd-input:focus { border-color: rgba(245,166,35,.5); background: rgba(245,166,35,.03); }
+    .wd-input::placeholder { color: rgba(255,255,255,.15); font-weight: 400; }
+
+    .wd-row { display: flex; gap: 12px; }
+    .wd-row .wd-form-group { flex: 1; }
+
+    .wd-submit {
+      width: 100%;
+      padding: 15px;
+      border: none;
+      border-radius: 999px;
+      font-size: 16px;
+      font-weight: 800;
+      font-family: 'DM Sans', sans-serif;
+      cursor: pointer;
+      background: linear-gradient(135deg, #f5a623, #d4891a);
+      color: #000;
+      box-shadow: 0 4px 20px rgba(245,166,35,.3);
+      transition: all .15s;
+      margin-top: 6px;
+    }
+    .wd-submit:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(245,166,35,.4); }
+    .wd-submit:active { transform: scale(.98); }
+
+    .wd-notice {
+      display: flex; align-items: flex-start; gap: 10px;
+      background: rgba(245,166,35,.05);
+      border: 1px solid rgba(245,166,35,.12);
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-bottom: 20px;
+      text-align: left;
+    }
+    .wd-notice-icon { font-size: 14px; flex-shrink: 0; margin-top: 1px; }
+    .wd-notice-text { font-size: 12px; color: rgba(255,255,255,.45); line-height: 1.5; }
+    .wd-notice-text strong { color: rgba(245,166,35,.85); font-weight: 600; }
+
+    @media (max-width: 600px) {
+      .wd-page-card { padding: 24px 18px; }
+      .wd-row { flex-direction: column; gap: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Auth Protection - Must be first -->
+  <script>
+    if (!window.Auth || !window.Auth.isAuthenticated()) {
+      window.location.href = '../app.html#/login';
+    } else {
+      window.Auth.initUserUI();
+      window.Auth.setupLogoutButtons();
+    }
+  </script>
+
+
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()" style="display:none;"></div>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <a href="index.html" class="sb-logo">
+      <img src="../assets/images/Memelabs%20Logo%201.png" alt="Logo" onerror="this.style.display='none'">
+      <span>Memelabs</span>
+    </a>
+    <nav class="sb-nav">
+      <div class="sb-sec">Main</div>
+      <a class="nav-btn" href="index.html">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+          <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
+        </svg>Dashboard
+      </a>
+      <a class="nav-btn" href="trade.html">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="1" x2="12" y2="23"/>
+          <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+        </svg>Trade
+      </a>
+      <a class="nav-btn" href="portfolio.html">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+        </svg>Portfolio
+      </a>
+      <div class="sb-sec">Earn</div>
+      <a class="nav-btn" href="launch.html">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/>
+        </svg>Launch Token
+        <span class="nb-badge">New</span>
+      </a>
+      <a class="nav-btn" href="leaderboard.html">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+        </svg>Leaderboard
+      </a>
+      <div class="sb-sec">Account</div>
+      <a class="nav-btn active" href="withdraw.html">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>Withdraw
+      </a>
+      <a class="nav-btn" href="profile.html">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="8" r="4"/>
+          <path d="M6 20v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/>
+        </svg>Profile
+      </a>
+      <button class="nav-btn" style="color:var(--red)" onclick="logout()">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+          <polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>Sign out
+      </button>
+    </nav>
+    <div class="sb-footer" onclick="window.location.href='profile.html'" style="cursor:pointer;">
+      <div class="sb-user">
+        <div class="sb-av" id="sb-avatar"></div>
+        <div>
+          <div class="sb-un" id="sb-username"></div>
+          <div class="sb-wa" id="sb-wallet"></div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="topbar">
+      <div class="tb-left">
+        <button class="menu-btn" onclick="toggleSidebar()">
+          <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="6" x2="21" y2="6"/>
+            <line x1="3" y1="12" x2="21" y2="12"/>
+            <line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
+        </button>
+        <div class="tb-greet">Withdraw <span>Funds</span><span style="display: none;"
+          id="top_bar_username"></span></div>
+      </div>
+      <div class="tb-right">
+        <a href="index.html" class="btn-back">← Dashboard</a>
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="pg-title">Withdraw</div>
+      <div class="pg-sub">Submit a withdrawal request to transfer your funds</div>
+
+      <!-- Stats row -->
+      <div class="grid-4">
+        <!-- <div class="stat-mini">
+          <div class="sm-icon g">💰</div>
+          <div class="sm-lbl">Available Balance</div>
+          <div class="sm-val" id="stat-balance">—</div>
+          <div class="sm-sub" style="color:var(--muted)">Your wallet</div>
+        </div> -->
+        <!-- <div class="stat-mini">
+          <div class="sm-icon p">📤</div>
+          <div class="sm-lbl">Total Withdrawn</div>
+          <div class="sm-val" id="stat-withdrawn">—</div>
+          <div class="sm-sub" style="color:var(--muted)">All time</div>
+        </div> -->
+        <div class="stat-mini">
+          <div class="sm-icon b">⏳</div>
+          <div class="sm-lbl">Pending</div>
+          <div class="sm-val">0</div>
+          <div class="sm-sub" style="color:var(--muted)">Requests</div>
+        </div>
+        <div class="stat-mini">
+          <div class="sm-icon gr">◎</div>
+          <div class="sm-lbl">Network</div>
+          <div class="sm-val up">Solana</div>
+          <div class="sm-sub up">Active</div>
+        </div>
+      </div>
+
+      <!-- Withdraw form card -->
+      <div class="wd-page-card">
+        <div class="wd-page-icon"> <img src="../assets/images/solana-sol-logo.png" width="50px" alt="">  </div>
+         
+        <div class="wd-page-title">Request Withdrawal</div>
+        <div class="wd-page-sub">Fill in the details below to submit your withdrawal request. Our team processes requests within 24–48 hours.</div>
+
+        <div class="wd-notice">
+          <span class="wd-notice-icon">⚠️</span>
+          <div class="wd-notice-text">
+            <strong>Important:</strong>  Ensure your wallet address is correct — transactions cannot be reversed once processed.
+          </div>
+        </div>
+
+        <div class="wd-form-group">
+          <label class="wd-label">Wallet Address</label>
+          <input class="wd-input" id="wd-wallet" type="text" placeholder="Enter your SOL wallet address">
+        </div>
+
+        <div class="wd-row">
+          <div class="wd-form-group">
+            <label class="wd-label">Amount (USD)</label>
+            <input class="wd-input" id="wd-amount" type="number" min="0" step="0.01" placeholder="0.00">
+          </div>
+          <div class="wd-form-group">
+            <label class="wd-label">Token</label>
+            <input class="wd-input" id="wd-token" type="text" placeholder="e.g. SOL, USDC">
+          </div>
+        </div>
+
+        <button class="wd-submit" onclick="openWithdrawModal()">
+          Request Withdrawal →
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <!-- ═══ WITHDRAW ERROR MODAL ═══ -->
+  <div class="wd-overlay" id="wdOverlay">
+    <div class="wd-card">
+      <div class="wd-top">
+        <div class="wd-icon-wrap">🚫</div>
+        <div class="wd-title">Withdrawals Unavailable</div>
+        <div class="wd-msg">
+          Withdrawals are currently <strong>processed manually</strong> by our support team.<br><br>
+          Please contact support directly and a team member will assist you with your withdrawal request as soon as possible.
+        </div>
+      </div>
+      <div class="wd-body">
+        <button class="wd-support-btn" onclick="openSupport()">
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+          Chat with Support
+        </button>
+        <button class="wd-cancel-btn" onclick="closeWithdrawModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+<!--Start of Tawk.to Script-->
+<script type="text/javascript">
+var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+(function(){
+var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+s1.async=true;
+s1.src='https://embed.tawk.to/69ef04d5f7613d1c38f451f3/1jn6qlpnc';
+s1.charset='UTF-8';
+s1.setAttribute('crossorigin','*');
+s0.parentNode.insertBefore(s1,s0);
+})();
+</script>
+<!--End of Tawk.to Script-->
+  <script>
+    function toggleSidebar() {
+      const sb = document.getElementById('sidebar');
+      const ov = document.getElementById('sidebarOverlay');
+      const open = sb.classList.toggle('open');
+      ov.style.display = open ? 'block' : 'none';
+    }
+
+   function openWithdrawModal() {
+
+    if(!document.getElementById('wd-wallet').value || !document.getElementById('wd-amount').value || !document.getElementById('wd-token').value) {
+        Toastify({
+                text: "Please fill in all fields before submitting your withdrawal request.",
+                duration: 3000,
+                newWindow: true,
+                close: true,
+                gravity: "top",
+                position: "right",
+                stopOnFocus: true,
+                style: {
+                background: "#f5a623", color: "black",
+                },
+                onClick: function(){}
+                }).showToast();  
+      return;
+    }
+
+  document.body.style.overflow = 'hidden';
+  
+  // Show processing state
+  const btn = document.querySelector('.wd-submit');
+  btn.textContent = 'Processing...';
+  btn.disabled = true;
+  btn.style.opacity = '0.7';
+
+  setTimeout(() => {
+    btn.textContent = 'Request Withdrawal →';
+    btn.disabled = false;
+    btn.style.opacity = '1';
+    document.getElementById('wdOverlay').classList.add('show');
+  }, 2000); // 2 sec delay
+}
+
+    function closeWithdrawModal() {
+      document.getElementById('wdOverlay').classList.remove('show');
+      document.body.style.overflow = '';
+    }
+
+    // Close on backdrop click
+    document.getElementById('wdOverlay').addEventListener('click', function(e) {
+      if (e.target === this) closeWithdrawModal();
+    });
+
+    function openSupport() {
+      if (window.Tawk_API && typeof window.Tawk_API.maximize === 'function') {
+        window.Tawk_API.maximize();
+      }
+      closeWithdrawModal();
+    }
+  </script>
+  <script src="api/user.js"></script>
+</body>
+</html>

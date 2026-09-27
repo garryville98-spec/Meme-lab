@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login · Meme Dex</title>
+  <link rel="shortcut icon" href="./assets/images/Favicon%201.png" type="image/x-icon">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./style.css">
+  <style>
+    .auth-shell {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background:
+        radial-gradient(circle at 85% 10%, rgba(245,166,35,0.18) 0%, transparent 45%),
+        radial-gradient(circle at 8% 90%, rgba(245,166,35,0.10) 0%, transparent 55%),
+        #080600;
+    }
+    .auth-card {
+      width: 100%;
+      max-width: 420px;
+      background: rgba(18,14,4,0.88);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(245,166,35,0.18);
+      border-radius: 20px;
+      padding: 32px 28px;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.5);
+      animation: authIn 0.3s ease;
+    }
+    @keyframes authIn { from { opacity:0; transform: translateY(12px);} to {opacity:1; transform: translateY(0);} }
+
+    .auth-brand {
+      display: flex; align-items: center; gap: 10px;
+      justify-content: center; margin-bottom: 18px;
+    }
+    .auth-brand img { width: 36px; height: 36px; border-radius: 8px; object-fit: cover; }
+    .auth-brand span { font-size: 18px; font-weight: 700; letter-spacing: -0.02em; }
+
+    .auth-title {
+      font-size: 24px; font-weight: 700; text-align: center;
+      margin-bottom: 6px; letter-spacing: -0.02em;
+    }
+    .auth-sub {
+      text-align: center; font-size: 13px;
+      color: rgba(255,255,255,0.5); margin-bottom: 24px;
+    }
+
+    .auth-field { margin-bottom: 14px; }
+    .auth-field label {
+      display: block; font-size: 11px; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.08em;
+      color: rgba(255,255,255,0.45); margin-bottom: 8px;
+    }
+    .auth-field input {
+      width: 100%;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      padding: 13px 14px;
+      font-size: 14px; color: #fff;
+      font-family: 'DM Sans', sans-serif;
+      outline: none;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .auth-field input:focus {
+      border-color: rgba(245,166,35,0.55);
+      background: rgba(245,166,35,0.06);
+    }
+
+    .auth-submit {
+      width: 100%; padding: 14px;
+      background: linear-gradient(135deg, #f5a623, #d4891a);
+      color: #000;
+      border: none; border-radius: 999px;
+      font-size: 15px; font-weight: 700;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: transform 0.1s, box-shadow 0.2s;
+      font-family: 'DM Sans', sans-serif;
+    }
+    .auth-submit:hover { box-shadow: 0 6px 20px rgba(245,166,35,0.3); }
+    .auth-submit:active { transform: scale(0.98); }
+
+    .auth-divider {
+      display: flex; align-items: center; gap: 12px;
+      margin: 18px 0;
+      font-size: 11px; color: rgba(255,255,255,0.3);
+      text-transform: uppercase; letter-spacing: 0.08em;
+    }
+    .auth-divider::before, .auth-divider::after {
+      content: ''; flex: 1; height: 1px;
+      background: rgba(255,255,255,0.08);
+    }
+
+    .auth-wallet {
+      width: 100%; padding: 12px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(245,166,35,0.25);
+      border-radius: 999px;
+      color: #f5a623;
+      font-size: 14px; font-weight: 600;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      transition: background 0.15s;
+    }
+    .auth-wallet:hover { background: rgba(245,166,35,0.08); }
+
+    .auth-foot {
+      text-align: center; margin-top: 20px;
+      font-size: 13px; color: rgba(255,255,255,0.45);
+    }
+    .auth-foot a { color: #f5a623; text-decoration: none; font-weight: 600; }
+    .auth-foot a:hover { text-decoration: underline; }
+
+    .auth-back {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 13px; color: rgba(255,255,255,0.5);
+      text-decoration: none; margin-bottom: 18px;
+      transition: color 0.15s;
+    }
+    .auth-back:hover { color: #f5a623; }
+  </style>
+</head>
+<body>
+  <div class="auth-shell">
+    <div class="auth-card">
+      <a class="auth-back" href="./app.html#/market">← Back to Meme Dex</a>
+      <div class="auth-brand">
+        <img src="./assets/images/Memelabs%20Logo%201.png" alt="Meme Dex">
+        <span>Meme Dex</span>
+      </div>
+      <h1 class="auth-title">Welcome back</h1>
+      <p class="auth-sub">Log in to trade memecoins and follow your portfolio.</p>
+
+      <form id="loginForm" onsubmit="return handleLogin(event)">
+        <div class="auth-field">
+          <label for="loginEmail">Email</label>
+          <input type="email" id="loginEmail" placeholder="you@memedex.fun" required>
+        </div>
+        <div class="auth-field">
+          <label for="loginPassword">Password</label>
+          <input type="password" id="loginPassword" placeholder="••••••••" required>
+        </div>
+        <button class="auth-submit" type="submit">Log in</button>
+      </form>
+
+      <div class="auth-divider">or</div>
+      <button class="auth-wallet" onclick="connectWallet()">🔗 Connect wallet</button>
+
+      <p class="auth-foot">New to Meme Dex? <a href="./signup.html">Create an account</a></p>
+    </div>
+  </div>
+
+  <script src="./auth.js"></script>
+  <script>
+    // Route back to the single app entry, whichever frame we are in.
+    const APP_HOME = './app.html#/dashboard';
+    function goToApp(hash) {
+      const target = (window.top && window.top !== window.self) ? window.top : window;
+      target.location.href = hash;
+    }
+
+    async function handleLogin(e) {
+      e.preventDefault();
+      const email = document.getElementById('loginEmail').value.trim();
+      const pw    = document.getElementById('loginPassword').value;
+
+      // Auth.login() writes memelabs_auth / memelabs_user, which is the same
+      // session the dashboard pages check via Auth.requireAuth().
+      const res = await Auth.login(email, pw);
+      if (!res.success) {
+        alert(res.message);
+        return false;
+      }
+      goToApp(APP_HOME);
+      return false;
+    }
+
+    async function connectWallet() {
+      const res = await Auth.signup(
+        'wallet_' + Math.random().toString(36).slice(2, 6),
+        'wallet@memelabs.fun',
+        'wallet'
+      );
+      if (res.success) {
+        res.user.wallet = res.user.wallet || '0x' + Math.random().toString(16).slice(2, 42);
+        Auth.updateProfile({ wallet: res.user.wallet });
+        goToApp(APP_HOME);
+      }
+    }
+  </script>
+</body>
+</html>

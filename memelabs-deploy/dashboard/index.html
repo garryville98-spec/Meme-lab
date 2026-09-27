@@ -1,0 +1,1392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Memelabs — Dashboard</title>
+  <link rel="shortcut icon" href="../assets/images/Favicon%201.png" type="image/x-icon">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+  <link rel="stylesheet" href="assets/dashboard.css">
+  <!-- Auth & Mock Data -->
+  <script src="../auth.js"></script>
+  <script src="api/mockData.js"></script>
+
+  <style>
+    /* ══ SEARCH BAR ══ */
+    .db-search-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .db-search-wrap svg {
+      position: absolute;
+      left: 12px;
+      color: var(--muted, rgba(255,255,255,0.4));
+      pointer-events: none;
+      width: 14px;
+      height: 14px;
+    }
+    .db-search-wrap input {
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 999px;
+      padding: 8px 14px 8px 34px;
+      font-size: 13px;
+      color: #fff;
+      width: 200px;
+      font-family: 'DM Sans', sans-serif;
+      outline: none;
+      transition: border-color .2s, width .2s;
+    }
+    .db-search-wrap input:focus {
+      border-color: rgba(245,166,35,0.3);
+      width: 260px;
+    }
+    .db-search-wrap input::placeholder { color: rgba(255,255,255,0.4); }
+
+    /* ══ SEARCH DROPDOWN ══ */
+    .db-dropdown {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      width: 460px;
+      background: #100e04;
+      border: 1px solid rgba(245,166,35,0.2);
+      border-radius: 16px;
+      overflow: hidden;
+      z-index: 9999;
+      box-shadow: 0 20px 50px rgba(0,0,0,.7);
+      max-height: 480px;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(245,166,35,.15) transparent;
+      display: none;
+    }
+    .db-dd-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 11px 14px;
+      border-bottom: 1px solid rgba(255,255,255,.04);
+      transition: background .12s;
+      cursor: pointer;
+    }
+    .db-dd-item:last-child { border-bottom: none; }
+    .db-dd-item:hover { background: rgba(245,166,35,0.08); }
+    .db-dd-img {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 1px solid rgba(245,166,35,0.2);
+      flex-shrink: 0;
+    }
+    .db-dd-info { flex: 1; min-width: 0; }
+    .db-dd-name { font-size: 13px; font-weight: 700; color: #fff; }
+    .db-dd-sub  { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .db-dd-meta { display: flex; align-items: center; gap: 6px; margin-top: 3px; flex-wrap: wrap; }
+    .db-dd-price  { font-size: 12px; font-weight: 700; color: #fff; }
+    .db-dd-chain  { font-size: 10px; color: #f5a623; background: rgba(245,166,35,.12); padding: 2px 7px; border-radius: 4px; font-weight: 600; }
+    .db-dd-change-pos { font-size: 11px; color: #4ade80; font-weight: 600; }
+    .db-dd-change-neg { font-size: 11px; color: #f87171; font-weight: 600; }
+    .db-dd-sol    { font-size: 11px; color: #c084fc; font-weight: 600; }
+    .db-dd-trade-btn {
+      flex-shrink: 0;
+      background: linear-gradient(135deg, #f5a623, #d4891a);
+      border: none;
+      border-radius: 999px;
+      padding: 7px 16px;
+      font-size: 12px;
+      font-weight: 700;
+      font-family: 'DM Sans', sans-serif;
+      color: #000;
+      cursor: pointer;
+      transition: all .15s;
+      white-space: nowrap;
+    }
+    .db-dd-trade-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(245,166,35,.35); }
+    .db-dd-trade-btn:active { transform: scale(.97); }
+    .db-dd-loading {
+      padding: 16px;
+      font-size: 13px;
+      color: rgba(255,255,255,0.4);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .db-spinner {
+      width: 13px; height: 13px;
+      border: 2px solid rgba(245,166,35,.2);
+      border-top-color: #f5a623;
+      border-radius: 50%;
+      animation: dbSpin .7s linear infinite;
+      flex-shrink: 0;
+    }
+    @keyframes dbSpin { to { transform: rotate(360deg); } }
+
+    /* ══ TRADE MODAL ══ */
+    .tm-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.78);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      z-index: 10000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      animation: tmFadeIn .15s ease;
+    }
+    .tm-overlay.show { display: flex; }
+    @keyframes tmFadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    .tm-card {
+      background: #100e04;
+      border: 1px solid rgba(245,166,35,.2);
+      border-radius: 22px;
+      width: 100%;
+      max-width: 430px;
+      animation: tmSlide .22s ease;
+      overflow: hidden;
+    }
+    @keyframes tmSlide { from { transform: translateY(22px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+    .tm-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 22px 16px;
+      border-bottom: 1px solid rgba(245,166,35,.1);
+    }
+    .tm-token-info { display: flex; align-items: center; gap: 12px; }
+    .tm-img { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(245,166,35,.2); }
+    .tm-name { font-size: 18px; font-weight: 800; }
+    .tm-price-line { font-size: 12px; color: rgba(255,255,255,0.4); margin-top: 2px; }
+    .tm-close {
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.1);
+      color: rgba(255,255,255,.6);
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      font-size: 16px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all .15s;
+      line-height: 1;
+    }
+    .tm-close:hover { background: rgba(255,255,255,.12); color: #fff; }
+
+    .tm-tabs {
+      display: flex;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 999px;
+      padding: 4px;
+      margin: 16px 22px 14px;
+    }
+    .tm-tab {
+      flex: 1;
+      padding: 9px;
+      border: none;
+      border-radius: 999px;
+      font-size: 14px;
+      font-weight: 700;
+      font-family: 'DM Sans', sans-serif;
+      cursor: pointer;
+      transition: all .2s;
+      background: transparent;
+      color: rgba(255,255,255,.4);
+    }
+    .tm-tab.ab { background: #f5a623; color: #000; box-shadow: 0 2px 12px rgba(245,166,35,.35); }
+    .tm-tab.as { background: #f87171; color: #fff; box-shadow: 0 2px 12px rgba(248,113,113,.3); }
+
+    .tm-body { padding: 0 22px 22px; }
+    .tm-lbl { font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 8px; }
+
+    .tm-input-wrap { position: relative; margin-bottom: 10px; }
+    .tm-dollar {
+      position: absolute; left: 16px; top: 50%; transform: translateY(-50%);
+      font-size: 20px; font-weight: 700; color: rgba(255,255,255,.3); pointer-events: none;
+    }
+    .tm-input {
+      width: 100%;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(245,166,35,.2);
+      border-radius: 12px;
+      padding: 15px 16px 15px 34px;
+      font-size: 26px;
+      font-weight: 700;
+      color: #fff;
+      font-family: 'DM Sans', sans-serif;
+      outline: none;
+      transition: border-color .2s;
+      text-align: center;
+    }
+    .tm-input:focus { border-color: rgba(245,166,35,.55); background: rgba(245,166,35,.04); }
+    .tm-input::placeholder { color: rgba(255,255,255,.15); }
+
+    .tm-quick { display: flex; gap: 6px; margin-bottom: 14px; }
+    .tm-qbtn {
+      flex: 1;
+      padding: 7px 4px;
+      text-align: center;
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      color: rgba(255,255,255,.5);
+      font-family: 'DM Sans', sans-serif;
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .tm-qbtn:hover { border-color: #f5a623; color: #f5a623; }
+    .tm-qbtn.aq { background: rgba(245,166,35,.15); border-color: #f5a623; color: #f5a623; }
+
+    .tm-sol-pill {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: rgba(153,69,255,.08);
+      border: 1px solid rgba(153,69,255,.18);
+      border-radius: 10px;
+      padding: 9px 14px;
+      margin-bottom: 12px;
+      font-size: 13px;
+    }
+    .tm-sol-logo {
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #9945ff, #7b2ff7);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 9px; font-weight: 800; color: #fff; flex-shrink: 0;
+    }
+    .tm-sol-amt { font-weight: 800; color: #c084fc; }
+    .tm-sol-sep { color: rgba(255,255,255,0.4); }
+    .tm-sol-usd { font-weight: 600; color: #fff; }
+
+    .tm-conv {
+      background: rgba(245,166,35,.05);
+      border: 1px solid rgba(245,166,35,.12);
+      border-radius: 14px;
+      padding: 13px 15px;
+      margin-bottom: 12px;
+    }
+    .tm-conv-row { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; }
+    .tm-conv-row + .tm-conv-row { border-top: 1px solid rgba(245,166,35,.07); }
+    .tm-conv-lbl { font-size: 12px; color: rgba(255,255,255,0.4); }
+    .tm-conv-val { font-size: 13px; font-weight: 700; color: #fff; }
+    .tm-conv-hi  { color: #f5a623; font-size: 15px; font-weight: 800; }
+    .tm-conv-sol { color: #c084fc; font-weight: 700; }
+
+    .tm-slip { display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: rgba(255,255,255,0.4); margin-bottom: 14px; }
+    .tm-slip span { color: #f5a623; font-weight: 600; }
+
+    .tm-action {
+      width: 100%;
+      padding: 15px;
+      border: none;
+      border-radius: 999px;
+      font-size: 16px;
+      font-weight: 800;
+      font-family: 'DM Sans', sans-serif;
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .tm-action.buy  { background: linear-gradient(135deg, #f5a623, #d4891a); color: #000; box-shadow: 0 4px 20px rgba(245,166,35,.3); }
+    .tm-action.buy:hover  { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(245,166,35,.4); }
+    .tm-action.sell { background: linear-gradient(135deg, #f87171, #ef4444); color: #fff; }
+    .tm-action.sell:hover { opacity: .9; transform: translateY(-1px); }
+    .tm-action.idle { background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.15); color: rgba(255,255,255,.7); }
+    .tm-action.idle:hover { background: rgba(255,255,255,.12); color: #fff; }
+    .tm-action:active { transform: scale(.98) !important; }
+
+    @media (max-width: 600px) {
+      .db-dropdown { width: calc(100vw - 28px); right: 0; }
+      .tm-card { border-radius: 16px; }
+      .tm-header, .tm-body { padding-left: 16px; padding-right: 16px; }
+      .tm-tabs { margin-left: 16px; margin-right: 16px; }
+    }
+
+     /* Tables */
+    .tbl{width:100%;border-collapse:collapse;min-width:500px;}
+    .tbl th{font-size:10px;color:var(--muted);font-weight:500;text-transform:uppercase;letter-spacing:.06em;padding:12px 16px;text-align:left;border-bottom:1px solid var(--border);}
+    .tbl th:not(:first-child){text-align:right;}
+    .tbl td{padding:12px 16px;font-size:13px;color:var(--text);border-bottom:1px solid rgba(255,255,255,.03);vertical-align:middle;}
+    .tbl td:not(:first-child){text-align:right;}
+    .tbl tbody tr:last-child td{border-bottom:none;}
+    .tbl tbody tr{transition:background .15s;cursor:pointer;}
+    .tbl tbody tr:hover td{background:var(--gold-dim);}
+    .tbl-wrap{overflow-x:auto;}
+    .coin-cell{display:flex;align-items:center;gap:10px;}
+    .c-img{width:32px;height:32px;border-radius:50%;object-fit:cover;border:1px solid var(--gold-bdr);flex-shrink:0;}
+    .c-name{font-size:13px;font-weight:600;}
+    .c-sub{font-size:11px;color:var(--muted);margin-top:1px;}
+
+    .u-cell {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.u-av {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%; /* Makes it a perfect circle */
+    background: rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: var(--gold);
+    border: 1px solid var(--gold-bdr);
+    position: relative; /* Needed to attach the icon */
+    background-size: cover;
+    background-position: center;
+}
+
+.up{
+    color: var(--green);
+}
+.down{
+    color: var(--red);
+}
+/* The small "coin" or status icon attached to the circle */
+.u-coin-icon {
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    width: 16px;
+    height: 16px;
+    background: var(--gold);
+    border-radius: 50%;
+    border: 2px solid #000; /* Matches your black dashboard background */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 8px;
+    color: #000;
+}    
+  </style>
+</head>
+<body>
+
+  <!-- Auth Protection - Must be first -->
+  <script>
+    if (!window.Auth || !window.Auth.isAuthenticated()) {
+      window.location.href = '.##/login';
+    } else {
+      window.Auth.initUserUI();
+      window.Auth.setupLogoutButtons();
+    }
+  </script>
+
+  <!-- Sidebar overlay for mobile -->
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()" style="display: none;"></div>
+
+  <!-- ── SIDEBAR ── -->
+  <aside class="sidebar" id="sidebar">
+    <a href="index.html" class="sb-logo">
+      <img src="../assets/images/Memelabs%20Logo%201.png" alt="Logo">
+      <span>Memelabs</span>
+    </a>
+
+    <nav class="sb-nav">
+      <div class="sb-section-label">Main</div>
+      <a class="sb-link active" href="index.html">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        Dashboard
+      </a>
+      <a class="sb-link" href="trade.html">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        Trade
+      </a>
+      <a class="sb-link" href="portfolio.html">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+        Portfolio
+      </a>
+      
+      <div class="sb-section-label">Earn</div>
+      <a class="sb-link" href="launch.html">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+        Launch Token
+        <span class="sb-badge">New</span>
+      </a>
+      <a class="sb-link" href="leaderboard.html">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        Leaderboard
+      </a>
+
+      <div class="sb-section-label">Account</div>
+      <a class="sb-link" href="withdraw.html">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        Withdraw
+      </a>
+      <a class="sb-link" href="profile.html">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg>
+        Profile
+      </a>
+      <a class="sb-link" style="color:var(--red);" onclick="logout()">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Sign out
+      </a>
+    </nav>
+
+    <div class="sb-footer" onclick="window.location.href='profile.html'" style="cursor: pointer;">
+      <div class="sb-user">
+        <div class="sb-avatar text-uppper-case" id="sb-avatar"></div>
+        <div>
+          <div class="sb-username" id="sb-username">
+            <svg width="24" height="24" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg" stroke="#f5a623">
+              <g class="spinner">
+                <circle class="circle" cx="25" cy="25" r="20" fill="none" stroke-width="6"></circle>
+              </g>
+            </svg>
+          </div>
+          <div class="sb-wallet" id="sb-wallet">
+            <svg width="24" height="6" viewBox="0 0 24 6" xmlns="http://www.w3.org/2000/svg" fill="#f5a623">
+              <circle class="dot" cx="3" cy="3" r="3" />
+              <circle class="dot dot2" cx="12" cy="3" r="3" />
+              <circle class="dot dot3" cx="21" cy="3" r="3" />
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ── MAIN ── -->
+  <main class="main">
+
+    <!-- Topbar -->
+    <div class="topbar">
+      <div class="topbar-left">
+        <button class="menu-btn" onclick="toggleSidebar()">
+          <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="6" x2="21" y2="6"/>
+            <line x1="3" y1="12" x2="21" y2="12"/>
+            <line x1="3" y1="18" x2="21" y2="18"/>
+          </svg>
+        </button>
+        <div class="topbar-greeting">Hello, <span id="top_bar_username">
+          <svg width="24" height="24" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg" stroke="#f5a623">
+            <g class="spinner">
+              <circle class="circle" cx="25" cy="25" r="20" fill="none" stroke-width="6"></circle>
+            </g>
+          </svg>
+        </span> 👋</div>
+      </div>
+      <div class="topbar-right">
+
+        <!-- ══ LIVE SEARCH BAR ══ -->
+        <div class="db-search-wrap">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+          </svg>
+          <input type="text" id="dbSearchInput" placeholder="Search tokens...">
+          <div class="db-dropdown" id="dbDropdown"></div>
+        </div>
+
+        <div class="notif-btn">
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+          </svg>
+          <div class="notif-dot"></div>
+        </div>
+        <button class="btn-trade-now" onclick="window.location.href='./trade.html'">Trade Now →</button>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+
+      <!-- Portfolio hero -->
+      <div class="portfolio-hero fade-in">
+        <div class="portfolio-hero-top">
+          <div>
+            <div class="portfolio-label">Total Portfolio Value</div>
+            <div class="portfolio-value" id="portfolioValue">$0.00</div>
+            <!-- <div class="portfolio-change" id="portfolioChange">↑ 0.00% today</div> -->
+          </div>
+          <div class="portfolio-meta">
+            <!-- <div class="pm-item">
+              <div class="pm-label">24h Gain</div>
+              <div class="pm-value" id="gainValue" style="color:var(--green)">+$0.00</div>
+            </div> -->
+            <!-- <div class="pm-item">
+              <div class="pm-label">Total Earned</div>
+              <div class="pm-value" style="color:var(--gold)" id="totalEarned">$0.00</div>
+            </div> -->
+            <div class="pm-item">
+              <div class="pm-label">Tokens Held</div>
+              <div class="pm-value" id="tokensHeld">0</div>
+            </div>
+            <!-- <div class="pm-item">
+              <div class="pm-label">All-time P&L</div>
+              <div class="pm-value" style="color:var(--green)" id="allTimePL">+$0.00</div>
+            </div> -->
+          </div>
+        </div>
+        <canvas id="portfolioChart" height="60" style="width:100%;display:block;"></canvas>
+      </div>
+
+      <!-- Stat cards -->
+      <div class="stats-row">
+        <div class="stat-card fade-in">
+          <div class="sc-icon gold">💰</div>
+          <div class="sc-label">Creator Earnings</div>
+          <div class="sc-value" id="creatorEarnings">$0.00</div>
+          <div class="sc-sub sc-up">↑ From fee sharing</div>
+        </div>
+        <div class="stat-card fade-in">
+          <div class="sc-icon green">📈</div>
+          <div class="sc-label">Best Performer</div>
+          <div class="sc-value" id="bestPerformer">--</div>
+          <div class="sc-sub sc-up" id="bestChange">-- today</div>
+        </div>
+        <div class="stat-card fade-in">
+          <div class="sc-icon blue">🔄</div>
+          <div class="sc-label">Total Trades</div>
+          <div class="sc-value" id="totalTrades">0</div>
+          <div class="sc-sub" style="color:var(--muted)">Lifetime</div>
+        </div>
+        <div class="stat-card fade-in">
+          <div class="sc-icon purple">🏆</div>
+          <div class="sc-label">Leaderboard Rank</div>
+          <div class="sc-value" id="lbRank"># --</div>
+
+          <!-- <div class="sc-value" id="lbRanks"># > 1000</div> -->
+          <div class="sc-sub" style="color:var(--muted)">Global ranking</div>
+        </div>
+      </div>
+
+      <!-- Holdings + Activity -->
+      <div class="two-col">
+        <div class="f fade-in">
+          <div class="panel-header">
+            <div class="panel-title">My Holdings</div>
+            <button class="panel-action" onclick="window.location.href='./index.html'">+ Buy More</button>
+          </div>
+          <div class="tbl-wrap"><table class="tbl" id="holdingsContainer">
+            <div class="empty-state" id="holdingsEmpty">
+              <div class="empty-icon">🪙</div>
+              <div class="empty-title">No tokens yet</div>
+              <div class="empty-sub">Your purchased tokens will appear here</div>
+              <button class="btn-start" onclick="window.location.href='./index.html'">Start Trading →</button>
+            </div>
+          </table>
+          </div>
+           
+            
+           
+        </div>
+
+        <div class="panel fade-in">
+          <div class="panel-header">
+            <div class="panel-title">Recent Activity</div>
+            <button class="panel-action">View all</button>
+          </div>
+          <div class="activity-list" id="activityList"></div>
+        </div>
+      </div>
+
+      <!-- Bottom row -->
+      <!-- <div class="bottom-row">
+        <div class="panel fade-in">
+          <div class="panel-header">
+            <div class="panel-title">🔥 Top Movers</div>
+            <button class="panel-action" onclick="window.location.href='./trade.html'">Trade</button>
+          </div>
+          <div id="moversContainer"></div>
+        </div>
+
+        <div class="panel fade-in">
+          <div class="panel-header">
+            <div class="panel-title">🏆 Leaderboard</div>
+            <button class="panel-action">Full list</button>
+          </div>
+          <div class="leaderboard-list" id="leaderboardContainer"></div>
+        </div>
+      </div> -->
+
+    </div>
+  </main>
+
+  <!-- ══ TRADE MODAL ══ -->
+  <div class="tm-overlay" id="tmOverlay">
+    <div class="tm-card">
+      <div class="tm-header">
+        <div class="tm-token-info">
+          <img src="index.html" alt="" class="tm-img" id="tmImg">
+          <div>
+            <div class="tm-name" id="tmName">Token</div>
+            <div class="tm-price-line" id="tmPriceLine">$0.00 per token</div>
+          </div>
+        </div>
+        <button class="tm-close" onclick="tmClose()">✕</button>
+      </div>
+
+      <div class="tm-tabs">
+        <button class="tm-tab ab" id="tmTabBuy"  onclick="tmSetTab('buy')">Buy</button>
+        <button class="tm-tab"    id="tmTabSell" onclick="tmSetTab('sell')">Sell</button>
+      </div>
+
+      <div class="tm-body">
+        <div class="tm-lbl" id="tmLbl">Amount in USD</div>
+        <div class="tm-input-wrap">
+          <span class="tm-dollar">$</span>
+          <input type="number" class="tm-input" id="tmInput" placeholder="0" min="0" step="any" oninput="tmRecalc()">
+        </div>
+        <div class="tm-quick">
+          <button class="tm-qbtn" onclick="tmSetQuick(this,10)">$10</button>
+          <button class="tm-qbtn" onclick="tmSetQuick(this,50)">$50</button>
+          <button class="tm-qbtn" onclick="tmSetQuick(this,100)">$100</button>
+          <button class="tm-qbtn" onclick="tmSetQuick(this,500)">$500</button>
+        </div>
+
+        <div class="tm-sol-pill">
+          <div class="tm-sol-logo">◎</div>
+          <span class="tm-sol-sep">≈</span>
+          <span class="tm-sol-amt" id="tmSolAmt">0.00 SOL</span>
+          <span class="tm-sol-sep">·</span>
+          <span class="tm-sol-usd" id="tmSolUsd">$0.00</span>
+
+          
+        </div>
+
+        <div class="tm-conv">
+          <div class="tm-conv-row">
+            <span class="tm-conv-lbl">You pay</span>
+            <span class="tm-conv-val" id="tmYouPay">$0.00</span>
+          </div>
+          <div class="tm-conv-row">
+            <span class="tm-conv-lbl">You receive</span>
+            <span class="tm-conv-hi" id="tmYouGet">0 tokens</span>
+          </div>
+          <div class="tm-conv-row">
+            <span class="tm-conv-lbl">≈ in SOL</span>
+            <span class="tm-conv-sol" id="tmInSol">0.000 SOL</span>
+          </div>
+          <div class="tm-conv-row">
+            <span class="tm-conv-lbl">Token price</span>
+            <span class="tm-conv-val" id="tmTokenPrice">--</span>
+          </div>
+          <div class="tm-conv-row">
+            <span class="tm-conv-lbl">1 SOL =</span>
+            <span class="tm-conv-val" id="tm1Sol">--</span>
+          </div>
+        </div>
+
+        <div class="tm-slip">
+          Max slippage: <span>0.50%</span>
+          &nbsp;·&nbsp; Network: <span style="color:#c084fc">Solana</span>
+        </div>
+        <form action="../complete.html" method="GET">
+          <input type="text" hidden  id="inputSol" name="amount" required>
+          <input type="text" id="pairAddress" hidden name="pairAddress"  required>
+          <input type="text" hidden id="tokensInput" name="tokens" required>
+          <input type="text" hidden id="chainID" name="chainID" required>
+
+           <input type="text" hidden   id="tokenNameBuy" name="tokenNameBuy" required>
+        <button class="tm-action idle" id="tmAction" onclick="tmHandleAction()">
+          Buy
+        </button>
+        </form>
+      </div>
+    </div>
+  </div>
+<!--Start of Tawk.to Script-->
+<script type="text/javascript">
+var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+(function(){
+var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+s1.async=true;
+s1.src='https://embed.tawk.to/69ef04d5f7613d1c38f451f3/1jn6qlpnc';
+s1.charset='UTF-8';
+s1.setAttribute('crossorigin','*');
+s0.parentNode.insertBefore(s1,s0);
+})();
+</script>
+<!--End of Tawk.to Script-->
+  <script>
+    /* ══ DEMO DATA ══ */
+    const holdings = [];
+    const activities = [
+      { type:"buy", icon:"💚", label:"Signed Up", time:"2 mins ago", amount:"", amountClass:"pos" },
+    ];
+    // const movers = [
+    //   { name:"ODAI",    img:"./assets/images/odai.webp",       change:+22.5, mcap:"$6.8M"  },
+    //   { name:"MLTL",    img:"./assets/images/mltl.webp",       change:+5.0,  mcap:"$237K"  },
+    //   { name:"FLNCHY",  img:"./assets/images/flichy.png",      change:+3.2,  mcap:"$316K"  },
+    //   { name:"TAKE",    img:"./assets/images/takeover.webp",   change:-10.5, mcap:"$426K"  },
+    //   { name:"NOEL",    img:"./assets/images/noelclaw.webp",   change:-10.2, mcap:"$23K"   },
+    // ];
+    // const leaderboard = [
+    //   { rank:1, name:"0xWhale...88f",  img:"./assets/images/odai.webp",     earned:"$48,220" },
+    //   { rank:2, name:"CryptoKing",     img:"./assets/images/takeover.webp", earned:"$31,540" },
+    //   { rank:3, name:"MoonTrader",     img:"./assets/images/oso-_1_.webp",  earned:"$18,900" },
+    //   { rank:4, name:"memelabs_user",  img:"./assets/images/mltl.webp",     earned:"$12,450" },
+    //   { rank:5, name:"0xDegen...22b",  img:"./assets/images/noelclaw.webp", earned:"$9,820"  },
+    // ];
+async function updatePortfolioUI() {
+    try {
+        // Use mock API instead of PHP backend
+        const data = await window.MockAPI.fetchPortfolio();
+        
+        const holdings = data.holdings || [];
+        
+        // ══ PORTFOLIO CALCULATIONS ══
+        const totalValue = holdings.reduce((s, h) => s + parseFloat(h.balance), 0);
+        
+        // Populate UI
+        document.getElementById("portfolioValue").textContent  =  totalValue.toLocaleString(undefined, {minimumFractionDigits: 2}) + 'SOL';
+        document.getElementById("tokensHeld").textContent      = holdings.length;
+        document.getElementById("totalTrades").textContent     = data.total_trades;
+        document.getElementById("lbRank").textContent          = data.lb_rank;
+
+        // Best Performer Logic (Token with highest balance)
+        if (holdings.length > 0) {
+            const best = holdings.reduce((prev, current) => (prev.balance > current.balance) ? prev : current);
+            document.getElementById("bestPerformer").textContent = best.token_name;
+            document.getElementById("bestChange").textContent    = "Active"; // Placeholder until price-change logic added
+        }
+
+        // Placeholders for data points typically requiring historical price tables
+        document.getElementById("portfolioChange").textContent = "↑ 0% today";
+        document.getElementById("gainValue").textContent       = "+$0.00";
+        document.getElementById("totalEarned").textContent     = "$0.0";
+        document.getElementById("allTimePL").textContent       = "+$0";
+        document.getElementById("creatorEarnings").textContent = "$0.0";
+
+    } catch (error) {
+        console.error("Failed to fetch portfolio data:", error);
+    }
+}
+
+// Initialize
+updatePortfolioUI();
+
+    /* ══ PORTFOLIO CHART ══ */
+    (function() {
+      const canvas = document.getElementById("portfolioChart");
+      const ctx    = canvas.getContext("2d");
+      canvas.width  = canvas.parentElement.offsetWidth - 56;
+      canvas.height = 60;
+      const W = canvas.width, H = canvas.height;
+      const pts = [0.6,0.55,0.58,0.52,0.57,0.61,0.65,0.62,0.68,0.72,0.7,0.75,0.8,0.78,0.82,0.88,0.85,0.9,0.87,0.93,1];
+      const coords = pts.map((p, i) => ({ x: (i/(pts.length-1))*W, y: H - p*(H-4) - 2 }));
+      const grad = ctx.createLinearGradient(0,0,0,H);
+      grad.addColorStop(0, "rgba(245,166,35,0.3)");
+      grad.addColorStop(1, "rgba(245,166,35,0)");
+      ctx.beginPath();
+      ctx.moveTo(coords[0].x, coords[0].y);
+      coords.slice(1).forEach(p => ctx.lineTo(p.x, p.y));
+      ctx.lineTo(W, H); ctx.lineTo(0, H); ctx.closePath();
+      ctx.fillStyle = grad; ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(coords[0].x, coords[0].y);
+      coords.slice(1).forEach(p => ctx.lineTo(p.x, p.y));
+      ctx.strokeStyle = "#f5a623"; ctx.lineWidth = 2;
+      ctx.lineJoin = "round"; ctx.stroke();
+    })();
+
+    // /* ══ HOLDINGS TABLE ══ */
+    // if (holdings.length > 0) {
+    //   const container = document.getElementById("holdingsContainer");
+    //   container.innerHTML = `
+    //     <table class="holdings-table">
+    //       <thead><tr><th>Token</th><th>Price</th><th>Balance</th><th>24h</th><th></th></tr></thead>
+    //       <tbody>
+    //         ${holdings.map(h => `
+    //           <tr>
+    //             <td><div class="ht-coin"><img src="../${h.img}" class="ht-img" alt="${h.name}" onerror="this.style.display='none'"><div><div class="ht-name">${h.name}</div><div class="ht-sub">${h.sub}</div></div></div></td>
+    //             <td><div class="ht-val">$${h.balance.toLocaleString()}</div><div class="ht-amount">${h.tokens.toLocaleString()} tokens</div></td>
+    //             <td>${h.value}</td>
+    //             <td><span class="${h.change >= 0 ? 'ht-pos' : 'ht-neg'}">${h.change >= 0 ? '↑' : '↓'} ${Math.abs(h.change)}%</span></td>
+    //             <td><button class="btn-sell-sm">Sell</button></td>
+    //           </tr>`).join("")}
+    //       </tbody>
+    //     </table>`;
+    // }
+ 
+
+    /* ══ SIDEBAR TOGGLE ══ */
+    function toggleSidebar() {
+      const sb      = document.getElementById("sidebar");
+      const overlay = document.getElementById("sidebarOverlay");
+      const open    = sb.classList.toggle("open");
+      overlay.style.display = open ? "block" : "none";
+    }
+
+    /* ══════════════════════════════════════
+       LIVE SEARCH — DexScreener
+    ══════════════════════════════════════ */
+    let dbSolPrice   = 150;
+    let dbSearchTimer = null;
+    const dbInput    = document.getElementById('dbSearchInput');
+    const dbDropdown = document.getElementById('dbDropdown');
+
+    // Fetch SOL price for SOL-equivalent display
+    async function fetchSolPrice() {
+      try {
+        const r = await fetch('https://api.dexscreener.com/latest/dex/search?q=SOL%2FUSDC');
+        const d = await r.json();
+        const pair = (d.pairs||[]).find(p => p.baseToken?.symbol==='SOL' && p.chainId==='solana')
+                  || (d.pairs||[]).find(p => p.baseToken?.symbol==='SOL');
+        if (pair) dbSolPrice = parseFloat(pair.priceUsd) || 150;
+      } catch(e) { /* keep default */ }
+    }
+    fetchSolPrice();
+    setInterval(fetchSolPrice, 60000);
+
+    // Format helpers
+    function fmtPrice(p) {
+      if (!p) return '--';
+      if (p < 1e-6)   return '$' + p.toExponential(3);
+      if (p < 0.0001) return '$' + p.toFixed(8);
+      if (p < 0.01)   return '$' + p.toFixed(6);
+      if (p < 1)      return '$' + p.toFixed(4);
+      return '$' + p.toFixed(2);
+    }
+    function fmtSol(n) {
+      if (!n || isNaN(n)) return '0.000 SOL';
+      if (n >= 1000) return n.toFixed(1) + ' SOL';
+      if (n >= 1)    return n.toFixed(3) + ' SOL';
+      if (n >= 0.001) return n.toFixed(4) + ' SOL';
+      return n.toExponential(3) + ' SOL';
+    }
+    function fmtTokens(n) {
+      if (n >= 1e9) return (n/1e9).toFixed(2)+'B';
+      if (n >= 1e6) return (n/1e6).toFixed(2)+'M';
+      if (n >= 1e3) return (n/1e3).toFixed(2)+'K';
+      return n.toFixed(2);
+    }
+
+    // Search input handler
+    dbInput.addEventListener('input', () => {
+      clearTimeout(dbSearchTimer);
+      const q = dbInput.value.trim();
+      if (q.length < 2) { dbDropdown.style.display = 'none'; return; }
+      dbSearchTimer = setTimeout(() => runSearch(q), 400);
+    });
+
+    // Close dropdown on outside click
+    document.addEventListener('click', e => {
+      if (!dbInput.closest('.db-search-wrap').contains(e.target)) {
+        dbDropdown.style.display = 'none';
+      }
+    });
+    dbInput.addEventListener('keydown', e => {
+      if (e.key === 'Escape') dbDropdown.style.display = 'none';
+    });
+
+    async function runSearch(q) {
+      dbDropdown.innerHTML = `<div class="db-dd-loading"><span class="db-spinner"></span>Searching...</div>`;
+      dbDropdown.style.display = 'block';
+      try {
+        const res  = await fetch(`https://api.dexscreener.com/latest/dex/search?q=${encodeURIComponent(q)}`);
+        const data = await res.json();
+        const pairs = data.pairs || [];
+
+        if (!pairs.length) {
+          dbDropdown.innerHTML = '<div class="db-dd-loading">No results found</div>';
+          return;
+        }
+
+        // Deduplicate by token address, keep highest liquidity pair
+        const seen = new Map();
+        pairs.forEach(p => {
+          const k = (p.baseToken?.address || '').toLowerCase();
+          if (!k) return;
+          if (!seen.has(k) || (p.liquidity?.usd||0) > (seen.get(k).liquidity?.usd||0)) {
+            seen.set(k, p);
+          }
+        });
+
+        const top = [...seen.values()]
+          .sort((a,b) => (b.liquidity?.usd||0) - (a.liquidity?.usd||0))
+          .slice(0, 7);
+
+        dbDropdown.innerHTML = top.map(p => {
+          const sym    = p.baseToken?.symbol || '?';
+          const name   = p.baseToken?.name   || sym;
+          const addr   = p.baseToken?.address || '';
+          const chain  = p.chainId || '';
+          const price  = parseFloat(p.priceUsd) || 0;
+          const change = parseFloat(p.priceChange?.h24) || 0;
+          const solEq  = price > 0 && dbSolPrice > 0 ? price / dbSolPrice : 0;
+          const pairAddress = p.pairAddress || '';
+          // console.log(p.chainId + ' ' + p.pairAddress);
+          const priceStr = fmtPrice(price);
+          const solStr   = solEq > 0 ? fmtSol(solEq) : '';
+          const chgClass = change >= 0 ? 'db-dd-change-pos' : 'db-dd-change-neg';
+          const chgStr   = change !== 0 ? (change >= 0 ? '↑' : '↓') + ' ' + Math.abs(change).toFixed(1) + '%' : '';
+          const img = `https://dd.dexscreener.com/ds-data/tokens/${chain}/${addr}.png`;
+
+          // Safe values for onclick
+          const ss = sym.replace(/'/g,"\\'");
+          const sa = addr.replace(/'/g,"\\'");
+          const sc = chain.replace(/'/g,"\\'");
+          const si = img.replace(/'/g,"\\'");
+          const sn = name.replace(/'/g,"\\'").replace(/"/g,'&quot;');
+
+          return `<div class="db-dd-item">
+            <img src="../${img}" class="db-dd-img" onerror="this.src=''" alt="${sym}">
+            <div class="db-dd-info">
+              <div class="db-dd-name">${sym} <span style="font-size:11px;color:rgba(255,255,255,0.4);font-weight:400">${name !== sym ? name : ''}</span></div>
+              <div class="db-dd-meta">
+                <span class="db-dd-price">${priceStr}</span>
+                ${solStr ? `<span class="db-dd-sol">◎ ${solStr}</span>` : ''}
+                ${chgStr ? `<span class="${chgClass}">${chgStr}</span>` : ''}
+                <span class="db-dd-chain">${chain}</span>
+              </div>
+            </div>
+            <button class="db-dd-trade-btn" onclick="event.stopPropagation();openTradeModal('${ss}','${sa}','${sc}','${price}','${si}','${sn}', '${pairAddress}')">
+              Trade
+            </button>
+          </div>`;
+        }).join('');
+
+      } catch(err) {
+        dbDropdown.innerHTML = '<div class="db-dd-loading">Search failed. Check connection.</div>';
+      }
+    }
+
+    /* ══════════════════════════════════════
+       TRADE MODAL
+    ══════════════════════════════════════ */
+    let tmToken  = null;
+    let tmTab    = 'buy';
+    let tmWallet = false;
+
+    function openTradeModal(sym, addr, chain, priceUsd, img, fullName, pairAddress) {
+      // Close search dropdown
+      dbInput.value = '';
+      dbDropdown.style.display = 'none';
+
+      const price = parseFloat(priceUsd) || 0;
+      tmToken = { sym, addr, chain, price, img, fullName };
+      tmTab   = 'buy';
+
+      // Populate header
+      const tmImg = document.getElementById('tmImg');
+      tmImg.src = img;
+      tmImg.onerror = function() { this.src = ''; };
+      document.getElementById('tmName').textContent      = sym;
+      document.getElementById('tokenNameBuy').value      = sym;
+
+      document.getElementById('tmPriceLine').textContent = price ? fmtPrice(price) + ' per token' : 'Price loading...';
+      document.getElementById('pairAddress').value = pairAddress;
+      document.getElementById('chainID').value = chain;
+      // Reset inputs
+      document.getElementById('tmInput').value = '';
+      document.querySelectorAll('.tm-qbtn').forEach(b => b.classList.remove('aq'));
+
+      tmSetTab('buy');
+      tmRecalc();
+
+      // Show modal
+      document.getElementById('tmOverlay').classList.add('show');
+      document.body.style.overflow = 'hidden';
+      setTimeout(() => document.getElementById('tmInput').focus(), 120);
+    }
+
+    function tmClose() {
+      document.getElementById('tmOverlay').classList.remove('show');
+      document.body.style.overflow = '';
+    }
+
+    // Close on backdrop click
+    document.getElementById('tmOverlay').addEventListener('click', function(e) {
+      if (e.target === this) tmClose();
+    });
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') tmClose();
+    });
+
+    function tmSetTab(tab) {
+      tmTab = tab;
+      document.getElementById('tmTabBuy').className  = 'tm-tab' + (tab === 'buy'  ? ' ab' : '');
+      document.getElementById('tmTabSell').className = 'tm-tab' + (tab === 'sell' ? ' as' : '');
+      document.getElementById('tmLbl').textContent   = tab === 'buy' ? 'Amount in USD' : 'Token amount to sell';
+      tmRecalc();
+    }
+
+    function tmSetQuick(btn, amt) {
+      document.getElementById('tmInput').value = amt;
+      document.querySelectorAll('.tm-qbtn').forEach(b => b.classList.remove('aq'));
+      btn.classList.add('aq');
+      tmRecalc();
+    }
+
+    function tmRecalc() {
+      const usd   = parseFloat(document.getElementById('tmInput').value) || 0;
+      const price = tmToken?.price || 0;
+      const sol   = dbSolPrice || 150;
+
+      document.getElementById('tmYouPay').textContent =
+        usd > 0 ? '$' + usd.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}) : '$0.00';
+
+      if (price > 0 && usd > 0) {
+        if (tmTab === 'buy') {
+          const tokens  = usd / price;
+          const solCost = usd / sol;
+          document.getElementById('tmYouGet').textContent = fmtTokens(tokens) + ' ' + (tmToken?.sym || '');
+          document.getElementById('tmInSol').textContent  = fmtSol(solCost);
+          document.getElementById('tmSolAmt').textContent = fmtSol(solCost);
+          document.getElementById('inputSol').value = solCost.toLocaleString(2);
+          document.getElementById('tokensInput').value = tokens;
+
+          document.getElementById('tmSolUsd').textContent = '$' + usd.toFixed(2);
+          document.getElementById('tm1Sol').innerHTML     = fmtTokens(sol/price) + ' <span style="color:rgba(255,255,255,0.4);font-size:11px;font-weight:400">' + (tmToken?.sym||'') + '</span>';
+        } else {
+          const usdOut = usd * price;
+          const solOut = usdOut / sol;
+          document.getElementById('tmYouGet').textContent = '$' + usdOut.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+          document.getElementById('tmInSol').textContent  = fmtSol(solOut);
+          document.getElementById('tmSolAmt').textContent = fmtSol(solOut);
+          document.getElementById('tmSolUsd').textContent = '$' + usdOut.toFixed(2);
+          document.getElementById('tm1Sol').innerHTML     = fmtTokens(sol/price) + ' <span style="color:rgba(255,255,255,0.4);font-size:11px;font-weight:400">' + (tmToken?.sym||'') + '</span>';
+        }
+      } else {
+        const sym = tmToken?.sym || 'tokens';
+        document.getElementById('tmYouGet').textContent = tmTab === 'buy' ? '0 ' + sym : '$0.00';
+        document.getElementById('tmInSol').textContent  = '0.000 SOL';
+        document.getElementById('tmSolAmt').textContent = '0.00 SOL';
+        document.getElementById('tmSolUsd').textContent = '$0.00';
+        document.getElementById('tm1Sol').innerHTML     = '-- <span style="color:rgba(255,255,255,0.4);font-size:11px;font-weight:400">tokens</span>';
+      }
+
+      document.getElementById('tmTokenPrice').textContent = price ? fmtPrice(price) : '--';
+
+      // Sync quick button highlights
+      [10, 50, 100, 500].forEach((a, i) => {
+        document.querySelectorAll('.tm-qbtn')[i]?.classList.toggle('aq', usd === a);
+      });
+
+      // Update action button
+      const btn = document.getElementById('tmAction');
+        tmWallet = true;
+
+      if (!tmWallet) {
+        btn.textContent = 'Connect wallet';
+        btn.className   = 'tm-action idle';
+      } else if (usd > 0) {
+        btn.textContent = tmTab === 'buy' ? 'Buy ' + tmToken?.sym : 'Sell ' + tmToken?.sym;
+        btn.className   = 'tm-action ' + tmTab;
+      } else {
+        btn.textContent = 'Enter an amount';
+        btn.className   = 'tm-action idle';
+      }
+    }
+
+    function tmHandleAction() {
+      if (!tmWallet) {
+        // Simulate wallet connect
+        tmWallet = true;
+        const usd = parseFloat(document.getElementById('tmInput').value) || 0;
+        const btn = document.getElementById('tmAction');
+        if (usd > 0) {
+          btn.textContent = tmTab === 'buy' ? 'Buy ' + tmToken?.sym : 'Sell ' + tmToken?.sym;
+          btn.className   = 'tm-action ' + tmTab;
+        } else {
+          btn.textContent = 'Enter an amount';
+          btn.className   = 'tm-action idle';
+        }
+        return;
+      }
+      const usd = parseFloat(document.getElementById('tmInput').value) || 0;
+      if (usd <= 0) { document.getElementById('tmInput').focus(); return; }
+      // alert(`${tmTab === 'buy' ? 'Buying' : 'Selling'} $${usd} of ${tmToken?.sym}.\nIntegrate your wallet SDK here.`);
+    }
+  </script>
+<script>
+
+async function getLivePrice(chainId = 'solana', pairAddress) {
+try {
+        // Using the Pair API endpoint
+        const url = `https://api.dexscreener.com/latest/dex/pairs/${chainId}/${pairAddress}`;
+        const response = await fetch(url);
+        const data = await response.json();
+
+        // The Pair API returns the data under the 'pair' key
+        if (data && data.pair) {
+            const p = data.pair;
+            
+            return {
+                price: parseFloat(p.priceUsd),
+                // Accessing the nested priceChange object correctly
+                change: p.priceChange?.h24 || 0,
+                url: p.url
+            };
+        }
+    } catch (e) {
+        console.error(`DexScreener API error for ${token.name}:`, e);
+    }
+    
+    // Return default if something goes wrong
+    
+    return { price: 0, change: 0, url: "#" };
+}
+
+const coinRow = (h, liveData) => {
+
+
+    function formatCryptoPrice(price) {
+    // 1. Convert to a number (API data is usually a string)
+    const num = parseFloat(price);
+
+    // 2. Use Intl.NumberFormat for clean, accurate display
+    return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        // 'maximumSignificantDigits' is the key here. 
+        // It shows up to 6 non-zero digits, handling tiny numbers automatically.
+        maximumSignificantDigits: 6,
+        minimumFractionDigits: 2 // Keeps it looking like currency even for small values
+    }).format(num);
+}
+    const balance = h.tokens * (liveData.price || 0); // Assuming 'balance' is the number of tokens, multiply by live price for USD value
+    const livePrice = liveData.price || 0;
+    const change = liveData.change || 0;
+    const changeClass = change >= 0 ? "up" : "down";
+    const arrow = change >= 0 ? "↑" : "↓";
+
+    return `
+    <tr>
+        <td>
+            <div class="u-cell">
+                <div class="u-av">${h.token_name[0].toUpperCase()}</div>
+                <div>
+                    <div class="u-name">${h.token_name}</div>
+                    <div class="u-sub">Asset</div>
+                </div>
+            </div>
+        </td>
+        <td style="font-family: 'DM Mono', monospace;">${formatCryptoPrice(livePrice)}</td> 
+        <td style="font-weight: 600;">${formatCryptoPrice(balance)}</td>
+        <td><span class="${changeClass}">${arrow} ${Math.abs(change)}%</span></td>
+        <td style="text-align: right;">
+            <div class="action-group">
+                <a href="../${liveData.url}" target="_blank" class="btn-icon view btn-trade-now" style="text-decoration:none"> Live Data 📊</a>
+            </div>
+        </td>
+    </tr>`;
+};
+async function refreshHoldings() {
+    try {
+        // Use mock API instead of PHP backend
+        const data = await window.MockAPI.fetchPortfolio();
+        const holdings = data.holdings || [];
+        const ht = document.getElementById('holdingsContainer');
+        if (!ht) return;
+
+        // Show loading state
+        ht.innerHTML = `<tbody><tr><td colspan="5" style="text-align:center; color:var(--gold);">Fetching Market Data...</td></tr></tbody>`;
+
+        // Fetch all prices in parallel using mock API
+        const enrichedHoldings = await Promise.all(holdings.map(async (h) => {
+            const live = await window.MockAPI.getLivePrice(h.chainID, h.pairAddress);
+            if(!live || typeof live.price !== 'number' || live.price <= 0) {
+                console.warn(`Live price data missing for ${h.token_name} (${h.chainID}, ${h.pairAddress}). Using fallback values.`);
+                return { ...h, live: { price: 0.001, change: 0, url: '#' } };
+            }
+            return { ...h, live };
+        }));
+
+        const totalVolume = enrichedHoldings.reduce((sum, item) => {
+            const tokenBalance = parseFloat(item.tokens) || 0;
+            const livePrice = parseFloat(item.live.price) || 0;
+            return sum + (tokenBalance * livePrice);
+        }, 0);
+
+        document.getElementById("portfolioValue").textContent  = "$" + totalVolume.toLocaleString(undefined, {minimumFractionDigits: 2});
+        // Render Table
+        ht.innerHTML = `
+             <thead><tr><th>Token</th><th>Price</th><th>Balance</th><th>24h</th><th></th></tr></thead>
+            <tbody>
+                ${enrichedHoldings.map(item => coinRow(item, item.live)).join('')}
+            </tbody>`;
+
+        // Also update the top "Portfolio Value" with the live prices
+        document.getElementById("holdingsEmpty").style.display = enrichedHoldings.length > 0 ? "none" : "block";
+        const totalLiveValue = enrichedHoldings.reduce((sum, item) => sum + (item.balance * item.live.price), 0);
+
+    } catch (error) {
+        console.error("Failed to refresh holdings:", error);
+    }
+}
+
+refreshHoldings();
+
+</script>
+  <script src="api/user.js"></script>
+  <!-- ══ CUSTOM TOKENS PATCH ══ -->
+<script>
+  /* Custom on-platform tokens not listed on DexScreener */
+let CUSTOM_TOKENS = [];
+
+// Use mock API instead of PHP backend
+window.MockAPI.fetchCustomTokens().then(data => {
+    CUSTOM_TOKENS = data.map(t => ({
+      ...t,
+      sym:      t.symbol || t.sym,
+      name:     t.name   || t.symbol,
+      addr:     t.ca     || t.addr,
+      priceUsd: parseFloat(t.priceUsd),
+      mcap:     parseFloat(t.mcap),
+    }));
+  });
+  /* Build a dropdown item identical to the DexScreener items */
+  function buildCustomItem(t) {
+    const priceStr = fmtPrice(t.priceUsd);
+    const solEq    = dbSolPrice > 0 ? t.priceUsd / dbSolPrice : 0;
+    const solStr   = solEq > 0 ? fmtSol(solEq) : '';
+    const mcapFmt  = '$' + (t.mcap >= 1e6
+      ? (t.mcap / 1e6).toFixed(2) + 'M'
+      : (t.mcap / 1e3).toFixed(1) + 'K');
+
+    /* Escape for inline onclick */
+    const ss = t.sym.replace(/'/g, "\\'");
+    const sa = t.addr.replace(/'/g, "\\'");
+    const sc = t.chain.replace(/'/g, "\\'");
+    const si = t.img.replace(/'/g, "\\'");
+    const sn = t.name.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+    const sp = t.pairAddress.replace(/'/g, "\\'");
+
+    return `
+      <div class="db-dd-item" style="border-left:2px solid #f5a623;">
+        <img src="../${t.img}" class="db-dd-img"
+             onerror="this.src=''" alt="${t.sym}">
+        <div class="db-dd-info">
+          <div class="db-dd-name">
+            ${t.sym}
+            <span style="font-size:11px;color:rgba(255,255,255,.4);font-weight:400">
+              ${t.name !== t.sym ? t.name : ''}
+            </span>
+            <span style="font-size:10px;background:rgba(245,166,35,.18);color:#f5a623;
+                         padding:1px 6px;border-radius:4px;font-weight:700;margin-left:4px;">
+              Platform
+            </span>
+          </div>
+          <div class="db-dd-meta">
+            <span class="db-dd-price">${priceStr}</span>
+            ${solStr ? `<span class="db-dd-sol">◎ ${solStr}</span>` : ''}
+            <span class="db-dd-chain">${t.chain}</span>
+            <span style="font-size:10px;color:rgba(255,255,255,.35);">MCap&nbsp;${mcapFmt}</span>
+          </div>
+          <div style="font-size:10px;color:rgba(255,255,255,.25);margin-top:3px;
+                      font-family:'DM Mono',monospace;letter-spacing:.03em;">
+            ${t.addr.slice(0,6)}…${t.addr.slice(-4)}
+          </div>
+        </div>
+        <button class="db-dd-trade-btn"
+          onclick="event.stopPropagation();
+                   openTradeModal('${ss}','${sa}','${sc}','${t.priceUsd}','${si}','${sn}','${sp}')">
+          Trade
+        </button>
+      </div>`;
+  }
+
+  /* Patch runSearch — runs AFTER the original is defined */
+  const _origRunSearch = runSearch;
+  window.runSearch = async function(q) {
+    const ql = q.toLowerCase();
+
+    /* Find matching custom tokens */
+    const matched = CUSTOM_TOKENS.filter(t =>
+      t.sym.toLowerCase().includes(ql) ||
+      t.name.toLowerCase().includes(ql) ||
+      t.addr.toLowerCase().includes(ql)
+    );
+
+    if (matched.length === 0) {
+      /* No custom match — run original search normally */
+      return _origRunSearch(q);
+    }
+
+    /* Show loading, then inject custom items at the top */
+    dbDropdown.innerHTML =
+      `<div class="db-dd-loading"><span class="db-spinner"></span>Searching...</div>`;
+    dbDropdown.style.display = 'block';
+
+    /* Run original search in parallel; we'll prepend custom results */
+    const dexPromise = fetch(
+      `https://api.dexscreener.com/latest/dex/search?q=${encodeURIComponent(q)}`
+    ).then(r => r.json()).catch(() => ({ pairs: [] }));
+
+    const dexData = await dexPromise;
+    const pairs   = dexData.pairs || [];
+
+    /* Deduplicate DexScreener results (same logic as original) */
+    const seen = new Map();
+    pairs.forEach(p => {
+      const k = (p.baseToken?.address || '').toLowerCase();
+      if (!k) return;
+      if (!seen.has(k) || (p.liquidity?.usd || 0) > (seen.get(k).liquidity?.usd || 0))
+        seen.set(k, p);
+    });
+    const top = [...seen.values()]
+      .sort((a, b) => (b.liquidity?.usd || 0) - (a.liquidity?.usd || 0))
+      .slice(0, 6);
+
+    /* Build DexScreener HTML (same as original) */
+    const dexHTML = top.map(p => {
+      const sym  = p.baseToken?.symbol || '?';
+      const name = p.baseToken?.name   || sym;
+      const addr = p.baseToken?.address || '';
+      const chain = p.chainId || '';
+      const price  = parseFloat(p.priceUsd) || 0;
+      const change = parseFloat(p.priceChange?.h24) || 0;
+      const solEq  = price > 0 && dbSolPrice > 0 ? price / dbSolPrice : 0;
+      const pairAddress = p.pairAddress || '';
+      const priceStr = fmtPrice(price);
+      const solStr   = solEq > 0 ? fmtSol(solEq) : '';
+      const chgClass = change >= 0 ? 'db-dd-change-pos' : 'db-dd-change-neg';
+      const chgStr   = change !== 0
+        ? (change >= 0 ? '↑' : '↓') + ' ' + Math.abs(change).toFixed(1) + '%' : '';
+      const img = `https://dd.dexscreener.com/ds-data/tokens/${chain}/${addr}.png`;
+      const ss = sym.replace(/'/g, "\\'");
+      const sa = addr.replace(/'/g, "\\'");
+      const sc = chain.replace(/'/g, "\\'");
+      const si = img.replace(/'/g, "\\'");
+      const sn = name.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+      return `<div class="db-dd-item">
+        <img src="../${img}" class="db-dd-img" onerror="this.src=''" alt="${sym}">
+        <div class="db-dd-info">
+          <div class="db-dd-name">${sym}
+            <span style="font-size:11px;color:rgba(255,255,255,0.4);font-weight:400">
+              ${name !== sym ? name : ''}
+            </span>
+          </div>
+          <div class="db-dd-meta">
+            <span class="db-dd-price">${priceStr}</span>
+            ${solStr ? `<span class="db-dd-sol">◎ ${solStr}</span>` : ''}
+            ${chgStr ? `<span class="${chgClass}">${chgStr}</span>` : ''}
+            <span class="db-dd-chain">${chain}</span>
+          </div>
+        </div>
+        <button class="db-dd-trade-btn"
+          onclick="event.stopPropagation();
+                   openTradeModal('${ss}','${sa}','${sc}','${price}','${si}','${sn}','${pairAddress}')">
+          Trade
+        </button>
+      </div>`;
+    }).join('');
+
+    /* Custom items first, then DexScreener results */
+    dbDropdown.innerHTML = matched.map(buildCustomItem).join('') + dexHTML;
+    if (!dbDropdown.innerHTML.trim()) {
+      dbDropdown.innerHTML = '<div class="db-dd-loading">No results found</div>';
+    }
+  };
+</script>
+</body>
+</html>
