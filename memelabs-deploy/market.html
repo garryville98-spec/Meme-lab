@@ -32,8 +32,8 @@
     </div>
     <div class="header-right">
       <button class="btn-how">How it works</button>
-      <button class="btn-launch" onclick="location.href='##/login'">Login</button>
-      <button class="btn-wallet" onclick="location.href='##/login'">Sign Up</button>
+      <button class="btn-launch" onclick="goToApp('#/login')">Login</button>
+      <button class="btn-wallet" onclick="goToApp('#/signup')">Sign Up</button>
     </div>
   </header>
 
@@ -404,5 +404,17 @@ s0.parentNode.insertBefore(s1,s0);
 <!--End of Tawk.to Script-->
   <script src="main.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // This page is rendered inside the app shell iframe, so navigation has
+    // to happen on window.top for the shell's hash router to pick it up.
+    function goToApp(hash) {
+      const inShell = window.top && window.top !== window.self;
+      if (inShell) {
+        window.top.location.hash = hash;
+      } else {
+        window.location.href = './index.html' + hash;
+      }
+    }
+  </script>
 </body>
 </html>

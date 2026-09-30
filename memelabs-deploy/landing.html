@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Memelabs — Trade Memecoins Onchain</title>
+  <link rel="shortcut icon" href="./assets/images/Favicon%201.png" type="image/x-icon">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+
+  <!-- ══════════════════════════════════════════════════════════════
+       Landing-only styles.
+
+       Kept in a scoped block rather than style.css so the shared
+       stylesheet that login / signup / market already load is left
+       completely untouched.
+       ══════════════════════════════════════════════════════════════ -->
+  <style>
+    /* ── Landing wrapper ── */
+    .lp-page {
+      min-height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+    .lp-page > .coin-list-section,
+    .lp-page > .site-footer { margin-top: auto; }
+
+    /* ── Hero headline (sits above the archive hero-grid) ── */
+    .lp-hero-copy {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 34px 24px 0;
+      text-align: center;
+    }
+    .lp-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      border-radius: 999px;
+      background: rgba(245,166,35,.10);
+      border: 1px solid rgba(245,166,35,.26);
+      color: #f5a623;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .02em;
+      margin-bottom: 18px;
+    }
+    .lp-eyebrow-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #f5a623;
+      animation: lp-pulse 2s ease-in-out infinite;
+    }
+    @keyframes lp-pulse {
+      0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(245,166,35,.55); }
+      50%      { opacity: .65; box-shadow: 0 0 0 6px rgba(245,166,35,0); }
+    }
+
+    .lp-title {
+      font-size: clamp(30px, 5.2vw, 58px);
+      font-weight: 700;
+      letter-spacing: -.03em;
+      line-height: 1.06;
+      margin: 0 0 16px;
+      color: #fff;
+    }
+    .lp-title .lp-grad {
+      background: linear-gradient(135deg, #f5a623, #d4891a);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .lp-sub {
+      font-size: clamp(14px, 1.6vw, 17px);
+      color: rgba(255,255,255,.55);
+      max-width: 620px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    /* ── Hero CTAs ── */
+    .lp-cta-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 26px;
+    }
+    .lp-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      border-radius: 999px;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      text-decoration: none;
+      transition: transform .12s, box-shadow .2s, background .18s, color .18s;
+      white-space: nowrap;
+    }
+    .lp-btn-primary {
+      background: linear-gradient(135deg, #f5a623, #d4891a);
+      color: #000;
+    }
+    .lp-btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 26px rgba(245,166,35,.32);
+    }
+    .lp-btn-ghost {
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(245,166,35,.26);
+      color: #f5a623;
+    }
+    .lp-btn-ghost:hover {
+      background: rgba(245,166,35,.14);
+      transform: translateY(-1px);
+    }
+    .lp-btn:active { transform: scale(.97); }
+
+    /* ── Features ── */
+    .lp-features {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 72px 24px 12px;
+    }
+    .lp-features-head {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    .lp-features-head h2 {
+      font-size: clamp(22px, 3.2vw, 34px);
+      font-weight: 700;
+      letter-spacing: -.025em;
+      margin: 0 0 10px;
+      color: #fff;
+    }
+    .lp-features-head p {
+      color: rgba(255,255,255,.45);
+      font-size: 14px;
+      margin: 0 auto;
+      max-width: 520px;
+      line-height: 1.6;
+    }
+
+    .lp-feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 16px;
+    }
+    .lp-card {
+      position: relative;
+      background: rgba(255,255,255,.028);
+      border: 1px solid rgba(255,255,255,.07);
+      border-radius: 18px;
+      padding: 26px 24px;
+      overflow: hidden;
+      transition: transform .22s ease, border-color .22s ease, background .22s ease;
+    }
+    /* soft gold wash that fades in on hover */
+    .lp-card::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 50% 0%, rgba(245,166,35,.13) 0%, transparent 68%);
+      opacity: 0;
+      transition: opacity .22s ease;
+      pointer-events: none;
+    }
+    .lp-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(245,166,35,.28);
+      background: rgba(255,255,255,.045);
+    }
+    .lp-card:hover::after { opacity: 1; }
+
+    .lp-card-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      background: rgba(245,166,35,.12);
+      border: 1px solid rgba(245,166,35,.22);
+      margin-bottom: 16px;
+      position: relative;
+      z-index: 1;
+    }
+    .lp-card h3 {
+      font-size: 16px;
+      font-weight: 700;
+      margin: 0 0 8px;
+      color: #fff;
+      letter-spacing: -.01em;
+      position: relative;
+      z-index: 1;
+    }
+    .lp-card p {
+      font-size: 13px;
+      line-height: 1.62;
+      color: rgba(255,255,255,.48);
+      margin: 0;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ── Bottom CTA band ── */
+    .lp-cta-band {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 56px 24px 8px;
+    }
+    .lp-cta-inner {
+      position: relative;
+      overflow: hidden;
+      border-radius: 22px;
+      border: 1px solid rgba(245,166,35,.24);
+      background:
+        radial-gradient(circle at 15% 0%, rgba(245,166,35,.16) 0%, transparent 58%),
+        radial-gradient(circle at 85% 110%, rgba(212,137,26,.13) 0%, transparent 55%),
+        rgba(255,255,255,.028);
+      padding: 46px 34px;
+      text-align: center;
+    }
+    .lp-cta-inner h2 {
+      font-size: clamp(21px, 3vw, 32px);
+      font-weight: 700;
+      letter-spacing: -.025em;
+      margin: 0 0 12px;
+      color: #fff;
+    }
+    .lp-cta-inner p {
+      color: rgba(255,255,255,.5);
+      font-size: 14px;
+      margin: 0 auto 26px;
+      max-width: 480px;
+      line-height: 1.6;
+    }
+    .lp-cta-note {
+      display: block;
+      margin-top: 16px;
+      font-size: 12px;
+      color: rgba(255,255,255,.32);
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 760px) {
+      .lp-hero-copy { padding: 26px 18px 0; }
+      .lp-features { padding: 52px 18px 8px; }
+      .lp-cta-band { padding: 40px 18px 4px; }
+      .lp-cta-inner { padding: 34px 20px; }
+      .lp-btn { width: 100%; justify-content: center; }
+      .lp-cta-row { max-width: 320px; margin-left: auto; margin-right: auto; }
+    }
+
+    /* ── Entrance animation ── */
+    @keyframes lp-rise {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: none; }
+    }
+    .lp-anim {
+      opacity: 0;
+      animation: lp-rise .6s cubic-bezier(.22,.7,.3,1) forwards;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .lp-anim { opacity: 1; animation: none; }
+      .lp-eyebrow-dot { animation: none; }
+      .lp-card { transition: none; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="lp-page">
+
+  <!-- ══ 1. TICKER ══ -->
+  <div class="ticker-bar">
+    <div class="ticker-track" id="tickerTrack"></div>
+  </div>
+
+  <!-- ══ 2. HEADER ══ -->
+  <header class="site-header">
+    <div class="header-left">
+      <a href="#" class="site-logo" id="lpLogoLink">
+        <img src="./assets/images/Memelabs%20Logo%201.png" alt="Logo">
+        <span class="logo-text">Memelabs</span>
+      </a>
+      <div class="search-wrap">
+        <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+        </svg>
+        <input type="text" placeholder="Search coins, CA, creators">
+      </div>
+    </div>
+    <div class="header-right">
+      <button class="btn-how" id="lpHowBtn">How it works</button>
+      <button class="btn-launch" id="lpLoginBtn" onclick="lpGo('#/login')">Login</button>
+      <button class="btn-wallet" id="lpSignupBtn" onclick="lpGo('#/signup')">Sign Up</button>
+    </div>
+  </header>
+
+  <!-- ══ 3. HERO ══ -->
+  <section class="hero">
+    <div class="online-counter" id="onlineCounter">
+      <span class="online-dot"></span>
+      <span class="online-count" id="onlineCount">---</span> online
+    </div>
+
+    <!-- Headline + primary CTAs (landing-specific) -->
+    <div class="lp-hero-copy lp-anim" style="animation-delay:.05s">
+      <div class="lp-eyebrow">
+        <span class="lp-eyebrow-dot"></span>
+        Live memecoin markets
+      </div>
+      <h1 class="lp-title">
+        Trade memecoins.<br><span class="lp-grad">Earn as they run.</span>
+      </h1>
+      <p class="lp-sub">
+        Buy and sell onchain memecoins in seconds. Creators automatically earn
+        a share of every trade routed to their token.
+      </p>
+      <div class="lp-cta-row">
+        <button class="lp-btn lp-btn-primary" onclick="lpGo('#/signup')">
+          Launch Wallet <span aria-hidden="true">→</span>
+        </button>
+        <a class="lp-btn lp-btn-ghost" href="market.html">
+          Explore the Market
+        </a>
+      </div>
+    </div>
+
+    <!-- CVT Token Info Bar -->
+    <div class="token-info-bar">
+      <div class="token-info-pill">
+        <img src="./assets/images/download.jpeg" onerror="this.src='./assets/images/odai.webp'" class="tip-img" alt="CVT">
+        <span class="tip-label">CVT</span>
+        <span class="tip-divider"></span>
+        <span class="tip-label">Cost</span>
+        <span class="tip-value">$0.001</span>
+        <span class="tip-divider"></span>
+        <span class="tip-label">per token</span>
+      </div>
+      <div class="token-info-pill">
+        <img src="./assets/images/download.jpeg" onerror="this.src='./assets/images/odai.webp'" class="tip-img" alt="CVT">
+        <span class="tip-label">Market Cap</span>
+        <span class="tip-value">$1,000,000</span>
+      </div>
+      <div class="token-info-pill" id="lpTradeCvt" style="cursor:pointer;border-color:rgba(245,166,35,0.35);">
+        <span style="font-size:11px;">⚡</span>
+        <span style="color:var(--gold,#f5a623);font-weight:700;">Trade CVT</span>
+      </div>
+    </div>
+
+    <div class="hero-grid">
+
+      <!-- LEFT: 2 stat boxes -->
+      <div class="stat-col">
+        <div class="stat-box">
+          <div class="stat-icon gold-icon"><img src="./assets/images/cash.webp" alt="" width="30" height="30"></div>
+          <div class="stat-label">Total creator earnings</div>
+          <div class="stat-value">$2,066,109</div>
+          <div class="claimed-pill">
+            <div class="claimed-avatar"></div>
+            <span>0x0c97...ecE4</span>
+            <span class="claimed-amount">Claimed $3.33</span>
+          </div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-icon green"><img src="./assets/images/up.webp" alt="" width="30" height="30"></div>
+          <div class="stat-label">24hr volume</div>
+          <div class="stat-value" id="heroVolume">Loading...</div>
+          <div class="live-badge"><div class="live-dot"></div>Live</div>
+        </div>
+      </div>
+
+      <!-- CENTER: 2x4 coin grid -->
+      <div class="hero-center-box">
+        <div class="box-title">Top earning coins</div>
+        <div class="hero-coins-grid" id="heroCoinsGrid"></div>
+      </div>
+
+      <!-- RIGHT: top volume -->
+      <div class="vol-box">
+        <div class="box-title">Top volume</div>
+        <table class="vol-table">
+          <thead><tr><th>Coin</th><th>MCAP</th><th>24H Vol</th></tr></thead>
+          <tbody id="volTableBody">
+            <tr>
+              <td><div class="vol-coin-cell"><div class="vol-avatar"><img src="./assets/images/odai.webp" alt=""></div>ODAI</div></td>
+              <td><div>$7.6M</div><span class="down-badge">↓ 4.7%</span></td>
+              <td><span class="vol-num">$321.0K</span></td>
+            </tr>
+            <tr>
+              <td><div class="vol-coin-cell"><div class="vol-avatar"><img src="./assets/images/takeover.webp" alt=""></div>TAKEOVER</div></td>
+              <td><div>$430.6K</div><span class="down-badge">↓ 13.2%</span></td>
+              <td><span class="vol-num">$61.5K</span></td>
+            </tr>
+            <tr>
+              <td><div class="vol-coin-cell"><div class="vol-avatar"><img src="./assets/images/oso-_1_.webp" alt=""></div>OSO</div></td>
+              <td><div>$748.4K</div><span class="down-badge">↓ 12.8%</span></td>
+              <td><span class="vol-num">$60.5K</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══ 4. FEATURES ══ -->
+  <section class="lp-features">
+    <div class="lp-features-head">
+      <h2>Why trade on Memelabs</h2>
+      <p>Everything you need to discover, launch and exit a memecoin — without leaving the page.</p>
+    </div>
+
+    <div class="lp-feature-grid">
+
+      <article class="lp-card">
+        <div class="lp-card-icon">⚡</div>
+        <h3>Instant settlement</h3>
+        <p>Trades settle onchain in seconds. No order book waiting, no hidden spread — you get the live price the moment you confirm.</p>
+      </article>
+
+      <article class="lp-card">
+        <div class="lp-card-icon">🎁</div>
+        <h3>Creator rewards</h3>
+        <p>Every token has a receiver address. Each buy routes a share back to its creator, automatically, with no claim step.</p>
+      </article>
+
+      <article class="lp-card">
+        <div class="lp-card-icon">📈</div>
+        <h3>Live market data</h3>
+        <p>Market cap, 24-hour volume and price movement refresh continuously, so you are always looking at the real market.</p>
+      </article>
+
+      <article class="lp-card">
+        <div class="lp-card-icon">🔒</div>
+        <h3>Non-custodial wallet</h3>
+        <p>Connect or create your wallet to start trading. Your keys stay with you and funds only move when you approve a trade.</p>
+      </article>
+
+      <article class="lp-card">
+        <div class="lp-card-icon">⛓️</div>
+        <h3>Multi-chain support</h3>
+        <p>Base, Solana and Ethereum tokens in one place, so you are not stuck trading a single network.</p>
+      </article>
+
+      <article class="lp-card">
+        <div class="lp-card-icon">🚀</div>
+        <h3>One-tap launch</h3>
+        <p>Ship a new token and start earning from the first trade. Your receiver is set at launch and starts paying out immediately.</p>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- ══ 5. COIN TABLE ══ -->
+  <div class="coin-list-section">
+    <div class="coin-tabs">
+      <button class="coin-tab active"><span class="tab-dot" style="background:#f5a623"></span>Trending</button>
+      <button class="coin-tab"><span class="tab-dot" style="background:#60a5fa"></span>New</button>
+      <button class="coin-tab"><span class="tab-dot" style="background:#34d399"></span>Top</button>
+      <button class="coin-tab"><span class="tab-dot" style="background:#fbbf24"></span>High vol</button>
+    </div>
+    <div class="coins-table-wrap">
+      <table class="coins-table">
+        <thead>
+          <tr>
+            <th>Coin ↕</th>
+            <th>MCAP ↕</th>
+            <th>24H VOL ↕</th>
+            <th>Receivers</th>
+            <th>Earned ↕</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="coinTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ══ 6. CTA BAND ══ -->
+  <section class="lp-cta-band">
+    <div class="lp-cta-inner">
+      <h2>Start trading in under a minute</h2>
+      <p>Connect a wallet or create an account, then buy your first token. No deposit required to get started.</p>
+      <div class="lp-cta-row">
+        <button class="lp-btn lp-btn-primary" onclick="lpGo('#/signup')">Create Account</button>
+        <button class="lp-btn lp-btn-ghost" onclick="lpGo('#/login')">Connect Wallet</button>
+      </div>
+      <span class="lp-cta-note">Part of the FLAY ecosystem · A Flayer Labs product</span>
+    </div>
+  </section>
+
+  <!-- ══ 7. FOOTER ══ -->
+  <footer class="site-footer">
+    <div class="footer-left">
+      <div class="theme-toggle" id="themeToggle">
+        <span class="toggle-icon moon">🌙</span>
+        <span class="toggle-icon sun">☀️</span>
+      </div>
+      <nav class="footer-nav">
+        <a href="#">Terms</a>
+        <a href="#">Privacy</a>
+        <a href="#">Docs</a>
+      </nav>
+    </div>
+    <div class="footer-right">
+      <span>Part of the FLAY ecosystem</span>
+      <span class="footer-divider">|</span>
+      <span>A Flayer Labs product</span>
+    </div>
+  </footer>
+
+</div><!-- /.lp-page -->
+
+<!-- ══ TOKEN SIDE PANEL ══ -->
+<div class="side-panel-overlay" id="sidePanelOverlay" onclick="closeSidePanel()"></div>
+<div class="side-panel" id="sidePanel">
+
+  <!-- Header -->
+  <div class="sp-header">
+    <div class="sp-header-left">
+      <img src="./assets/images/odai.webp" alt="" class="sp-token-img" id="spTokenImg">
+      <div>
+        <div class="sp-token-symbol" id="spTokenSymbol">--</div>
+        <div class="sp-token-sub"    id="spTokenSub">--</div>
+      </div>
+    </div>
+    <div class="sp-header-right">
+      <button class="sp-close" onclick="closeSidePanel()">✕</button>
+    </div>
+  </div>
+
+  <!-- Price block -->
+  <div class="sp-price-block">
+    <div class="sp-mcap-label">Market cap</div>
+    <div style="display:flex;align-items:baseline;gap:4px;">
+      <div class="sp-mcap-value" id="spMcap">--</div>
+      <span id="spChange" class="sp-change-pos"></span>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="sp-tabs">
+    <button class="sp-tab active" onclick="setSPTab('trade',this)">Trade</button>
+    <button class="sp-tab"        onclick="setSPTab('info',this)">Info</button>
+    <button class="sp-tab"        onclick="setSPTab('stats',this)">Stats</button>
+  </div>
+
+  <!-- Scrollable content -->
+  <div class="sp-content" id="spContent">
+
+    <!-- TRADE TAB -->
+    <div id="spTradeTab">
+      <div class="sp-timeframes">
+        <button class="sp-tf-btn" onclick="setSPTf(this,'1m')">1m</button>
+        <button class="sp-tf-btn" onclick="setSPTf(this,'15m')">15m</button>
+        <button class="sp-tf-btn active" onclick="setSPTf(this,'1h')">1h</button>
+        <button class="sp-tf-btn" onclick="setSPTf(this,'4h')">4h</button>
+        <button class="sp-tf-btn" onclick="setSPTf(this,'1d')">1d</button>
+      </div>
+      <div class="sp-chart-wrap">
+        <canvas id="spChart"></canvas>
+      </div>
+
+      <div class="sp-trade-tabs">
+        <button class="sp-trade-tab active-buy"  id="spTabBuy"  onclick="setSPTradeMode('buy')">Buy</button>
+        <button class="sp-trade-tab"              id="spTabSell" onclick="setSPTradeMode('sell')">Sell</button>
+      </div>
+
+      <div class="sp-input-wrap">
+        <span class="sp-dollar">$</span>
+        <input type="number" class="sp-amount-input" id="spAmountInput"
+          placeholder="0" min="0" step="any" oninput="updateSPCalc()">
+      </div>
+
+      <div class="sp-quick">
+        <button class="sp-quick-btn" onclick="setSPQuick(this,10)">$10</button>
+        <button class="sp-quick-btn" onclick="setSPQuick(this,50)">$50</button>
+        <button class="sp-quick-btn" onclick="setSPQuick(this,100)">$100</button>
+        <button class="sp-quick-btn" onclick="setSPQuick(this,500)">$500</button>
+      </div>
+
+      <div class="sp-receive-box">
+        <div class="sp-receive-row">
+          <span class="sp-receive-label">You pay</span>
+          <span class="sp-receive-val" id="spYouPay">$0.00</span>
+        </div>
+        <div class="sp-receive-row">
+          <span class="sp-receive-label">You receive</span>
+          <span class="sp-receive-highlight" id="spYouReceive">0 tokens</span>
+        </div>
+        <div class="sp-receive-row">
+          <span class="sp-receive-label">Price per token</span>
+          <span class="sp-receive-val" id="spPricePerToken">--</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- INFO TAB -->
+    <div id="spInfoTab" style="display:none;">
+      <div class="sp-stats">
+        <div class="sp-stat-card">
+          <div class="sp-stat-label">Price</div>
+          <div class="sp-stat-value" id="spInfoPrice">--</div>
+        </div>
+        <div class="sp-stat-card">
+          <div class="sp-stat-label">24h Change</div>
+          <div class="sp-stat-value" id="spInfoChange">--</div>
+        </div>
+        <div class="sp-stat-card">
+          <div class="sp-stat-label">24h Volume</div>
+          <div class="sp-stat-value" id="spInfoVol">--</div>
+        </div>
+        <div class="sp-stat-card">
+          <div class="sp-stat-label">Market Cap</div>
+          <div class="sp-stat-value" id="spInfoMcap">--</div>
+        </div>
+      </div>
+      <div class="sp-stat-card" style="margin-bottom:10px;">
+        <div class="sp-stat-label">Contract Address</div>
+        <div class="sp-stat-value" id="spInfoCA" style="font-size:11px;word-break:break-all;color:rgba(255,255,255,0.6);margin-top:4px;">--</div>
+      </div>
+      <div class="sp-stat-card">
+        <div class="sp-stat-label">Chain</div>
+        <div class="sp-stat-value" id="spInfoChain">--</div>
+      </div>
+    </div>
+
+    <!-- STATS TAB -->
+    <div id="spStatsTab" style="display:none;">
+      <div class="sp-stats">
+        <div class="sp-stat-card">
+          <div class="sp-stat-label">Earned (est.)</div>
+          <div class="sp-stat-value" id="spStatsEarned">--</div>
+        </div>
+        <div class="sp-stat-card">
+          <div class="sp-stat-label">24h Vol</div>
+          <div class="sp-stat-value" id="spStatsVol">--</div>
+        </div>
+        <div class="sp-stat-card">
+          <div class="sp-stat-label">FDV</div>
+          <div class="sp-stat-value" id="spStatsFDV">--</div>
+        </div>
+        <div class="sp-stat-card">
+          <div class="sp-stat-label">Receivers</div>
+          <div class="sp-stat-value" id="spStatsReceiver" style="font-size:11px;">--</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end sp-content -->
+
+  <!-- Footer buy/sell buttons -->
+  <div class="sp-footer">
+    <button class="sp-sell-btn" onclick="setSPTradeMode('sell');document.getElementById('spAmountInput').focus()">Sell</button>
+    <button class="sp-buy-btn"  onclick="setSPTradeMode('buy');document.getElementById('spAmountInput').focus()">Buy</button>
+  </div>
+
+</div><!-- end side-panel -->
+
+<!-- ══ TRADE MODAL ══ -->
+<div class="modal-overlay" id="tradeModal" style="display:none;" onclick="handleModalOverlayClick(event)">
+  <div class="modal-box">
+
+    <div class="modal-header">
+      <div class="modal-title">
+        <img src="./assets/images/odai.webp" alt="" class="modal-token-img" id="modalTokenImg">
+        <div>
+          <div class="modal-token-name" id="modalTokenName">Token</div>
+          <div class="modal-token-price" id="modalTokenPrice">$0.00</div>
+        </div>
+      </div>
+      <button class="modal-close" onclick="closeTradeModal()">✕</button>
+    </div>
+
+    <div class="modal-tabs">
+      <button class="modal-tab active-buy" id="tabBuy" onclick="setModalTab('buy')">Buy</button>
+      <button class="modal-tab" id="tabSell" onclick="setModalTab('sell')">Sell</button>
+    </div>
+
+    <div class="modal-label">Amount (USD)</div>
+    <div class="modal-input-wrap">
+      <span class="modal-currency">$</span>
+      <input
+        type="number"
+        class="modal-amount-input"
+        id="modalAmountInput"
+        placeholder="0"
+        min="0"
+        step="any"
+        oninput="updateModalCalc()"
+      >
+    </div>
+
+    <div class="modal-quick">
+      <button class="modal-quick-btn" onclick="setQuickAmount(10)">$10</button>
+      <button class="modal-quick-btn" onclick="setQuickAmount(50)">$50</button>
+      <button class="modal-quick-btn" onclick="setQuickAmount(100)">$100</button>
+      <button class="modal-quick-btn" onclick="setQuickAmount(500)">$500</button>
+    </div>
+
+    <div class="modal-balance-box">
+      <div class="modal-balance-row">
+        <span class="modal-balance-label">You pay</span>
+        <span class="modal-balance-value" id="modalYouPay">$0.00</span>
+      </div>
+      <div class="modal-balance-row">
+        <span class="modal-balance-label">You receive</span>
+        <span class="modal-balance-highlight" id="modalYouReceive">0 tokens</span>
+      </div>
+      <div class="modal-balance-row">
+        <span class="modal-balance-label">Token price</span>
+        <span class="modal-balance-value" id="modalPricePerToken">--</span>
+      </div>
+    </div>
+
+    <div class="modal-slippage">
+      Max slippage: <span onclick="alert('Slippage settings coming soon!')">0.50% ∨</span>
+    </div>
+
+    <button class="modal-action-btn connect-btn" id="modalActionBtn" onclick="handleModalAction()">
+      Connect wallet
+    </button>
+
+  </div>
+</div>
+
+<script src="main.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+/* ══════════════════════════════════════════════════════════════
+   Landing page → app navigation.
+
+   This page is rendered inside the app shell's iframe when reached
+   via #/landing. Every navigation therefore has to target the shell
+   (window.top) rather than this frame, or the shell's router would
+   never see the change. When the page is opened directly - e.g. by
+   visiting /landing.html or the marketplace link - there is no shell,
+   so we fall back to driving location.hash on this window.
+   ══════════════════════════════════════════════════════════════ */
+function lpGo(hash) {
+  const inShell = window.top && window.top !== window.self;
+  const target  = inShell ? window.top : window;
+
+  if (inShell) {
+    target.location.hash = hash;
+  } else {
+    target.location.href = './index.html' + hash;
+  }
+}
+
+// "How it works" scrolls to the feature grid instead of doing nothing.
+(function () {
+  const btn = document.getElementById('lpHowBtn');
+  if (!btn) return;
+  btn.addEventListener('click', () => {
+    const el = document.querySelector('.lp-features');
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+})();
+
+// The Trade CVT pill uses the same modal the rest of the page uses,
+// but route the final "Connect wallet" click through the app flow.
+(function () {
+  const pill = document.getElementById('lpTradeCvt');
+  if (!pill) return;
+  pill.addEventListener('click', () => {
+    if (typeof openTradeModal === 'function') openTradeModal('CVT');
+  });
+})();
+
+// Header actions depend on auth state: signed-in visitors get a direct
+// route into the app instead of the login / sign-up pair.
+document.addEventListener('DOMContentLoaded', () => {
+  let authed = false;
+  try { authed = localStorage.getItem('memelabs_auth') === 'true'; } catch (e) {}
+
+  const loginBtn  = document.getElementById('lpLoginBtn');
+  const signupBtn = document.getElementById('lpSignupBtn');
+  const logoLink  = document.getElementById('lpLogoLink');
+
+  if (authed) {
+    if (loginBtn) {
+      loginBtn.textContent = 'Dashboard';
+      loginBtn.onclick = () => lpGo('#/dashboard');
+    }
+    if (signupBtn) {
+      signupBtn.textContent = 'Trade';
+      signupBtn.onclick = () => lpGo('#/market');
+    }
+  }
+
+  if (logoLink) {
+    logoLink.onclick = (e) => {
+      e.preventDefault();
+      lpGo(authed ? '#/dashboard' : '#/landing');
+    };
+  }
+});
+</script>
+</body>
+</html>

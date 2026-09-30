@@ -151,17 +151,25 @@
       <div class="auth-divider">or</div>
       <button class="auth-wallet" onclick="connectWallet()">🔗 Connect wallet</button>
 
-      <p class="auth-foot">New to Meme Dex? <a href="./signup.html">Create an account</a></p>
+      <p class="auth-foot">New to Meme Dex? <a href="#" onclick="goToApp('#/signup');return false;">Create an account</a></p>
     </div>
   </div>
 
   <script src="./auth.js"></script>
   <script>
     // Route back to the single app entry, whichever frame we are in.
-    const APP_HOME = '##/dashboard';
+    const APP_HOME = '#/dashboard';
+
+    // These pages render inside the app shell iframe. Setting location.href
+    // to a bare '#/...' string would navigate this frame to a bogus URL, so
+    // the hash has to be set on window.top for the shell router to see it.
     function goToApp(hash) {
-      const target = (window.top && window.top !== window.self) ? window.top : window;
-      target.location.href = hash;
+      const inShell = window.top && window.top !== window.self;
+      if (inShell) {
+        window.top.location.hash = hash;
+      } else {
+        window.location.href = './index.html' + hash;
+      }
     }
 
     async function handleLogin(e) {

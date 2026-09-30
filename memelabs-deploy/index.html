@@ -198,6 +198,7 @@
        Every area of the app is reachable from this one URL via the
        hash, so there is a single link to bookmark / share:
 
+         #/landing     pre-login landing page (default)
          #/market      public token table
          #/login       pre-login screen
          #/signup      create an account
@@ -220,6 +221,7 @@
 
     // Which page each route points at.
     const ROUTES = {
+      landing:   () => 'landing.html',
       market:    () => 'market.html',
       login:     () => 'login.html',
       signup:    () => 'signup.html',
@@ -257,8 +259,10 @@
       let { route, query } = parseHash();
 
       // No / unknown route: send people where they actually belong.
+      // Signed-out visitors land on the marketing page first; the landing
+      // page itself links onward to #/login and #/signup.
       if (!route) {
-        route = Auth.isAuthenticated() ? 'dashboard' : 'login';
+        route = Auth.isAuthenticated() ? 'dashboard' : 'landing';
         location.replace('#/' + route);
         return;
       }

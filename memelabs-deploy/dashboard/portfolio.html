@@ -158,7 +158,7 @@
   <!-- Auth Protection - Must be first -->
   <script>
     if (!window.Auth || !window.Auth.isAuthenticated()) {
-      window.location.href = '.##/login';
+      window.Auth && window.Auth.redirectToLogin ? window.Auth.redirectToLogin() : (window.top.location.hash = "#/login");
     } else {
       window.Auth.initUserUI();
       window.Auth.setupLogoutButtons();

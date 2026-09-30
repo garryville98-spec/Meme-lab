@@ -10,13 +10,13 @@ document.addEventListener('DOMContentLoaded', () => {
 async function fetchUserProfile() {
     // Check authentication first
     if (!window.Auth || !window.Auth.isAuthenticated()) {
-        window.location.href = ".##/login";
+        window.Auth && window.Auth.redirectToLogin ? window.Auth.redirectToLogin() : (window.top.location.hash = "#/login");
         return;
     }
 
     const user = window.Auth.getCurrentUser();
     if (!user) {
-        window.location.href = ".##/login";
+        window.Auth && window.Auth.redirectToLogin ? window.Auth.redirectToLogin() : (window.top.location.hash = "#/login");
         return;
     }
 

@@ -13,13 +13,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // Check authentication first
         if (!window.Auth || !window.Auth.isAuthenticated()) {
-            window.location.href = ".##/login";
+            window.Auth && window.Auth.redirectToLogin ? window.Auth.redirectToLogin() : (window.top.location.hash = "#/login");
             return;
         }
 
         const user = window.Auth.getCurrentUser();
         if (!user) {
-            window.location.href = ".##/login";
+            window.Auth && window.Auth.redirectToLogin ? window.Auth.redirectToLogin() : (window.top.location.hash = "#/login");
             return;
         }
 
@@ -63,13 +63,13 @@ function logout() {
                 position: "right",
                 style: { background: "#f5a623", color: "black" }
             }).showToast();
-            setTimeout(() => { window.location.href = '.##/login'; }, 500);
+            setTimeout(() => { window.Auth && window.Auth.redirectToLogin ? window.Auth.redirectToLogin() : (window.top.location.hash = "#/login"); }, 500);
         });
     } else {
         // Fallback if Auth not loaded
         localStorage.removeItem('memelabs_auth');
         localStorage.removeItem('memelabs_user');
-        window.location.href = '.##/login';
+        window.Auth && window.Auth.redirectToLogin ? window.Auth.redirectToLogin() : (window.top.location.hash = "#/login");
     }
 }
 

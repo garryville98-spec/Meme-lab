@@ -180,16 +180,22 @@
 
       <p class="auth-terms">By signing up you agree to our <a href="#">Terms</a> and <a href="#">Privacy Policy</a>.</p>
 
-      <p class="auth-foot">Already have an account? <a href="##/login">Log in</a></p>
+      <p class="auth-foot">Already have an account? <a href="#" onclick="goToApp('#/login');return false;">Log in</a></p>
     </div>
   </div>
 
   <script src="./auth.js"></script>
   <script>
     // Route back to the single app entry, whichever frame we are in.
+    // These pages render inside the app shell iframe, so the hash must be
+    // set on window.top rather than navigating this frame to a bare '#/'.
     function goToApp(hash) {
-      const target = (window.top && window.top !== window.self) ? window.top : window;
-      target.location.href = hash;
+      const inShell = window.top && window.top !== window.self;
+      if (inShell) {
+        window.top.location.hash = hash;
+      } else {
+        window.location.href = './index.html' + hash;
+      }
     }
 
     async function handleSignup(e) {
@@ -209,7 +215,7 @@
         alert(res.message);
         return false;
       }
-      goToApp('##/dashboard');
+      goToApp('#/dashboard');
       return false;
     }
 
@@ -219,7 +225,7 @@
         'wallet@memelabs.fun',
         'wallet'
       );
-      if (res.success) goToApp('##/dashboard');
+      if (res.success) goToApp('#/dashboard');
     }
   </script>
 </body>
