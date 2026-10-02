@@ -3,12 +3,28 @@
  * Provides realistic portfolio, token, and leaderboard data
  */
 
+/**
+ * Resolve an asset reference to a URL the dashboard can actually load.
+ * Handles three cases:
+ *   - absolute URLs (https://, //, data:)  -> returned untouched
+ *   - site-root paths (/foo.png)           -> returned untouched
+ *   - relative paths (assets/images/x)     -> prefixed with ../ (dashboard is one level deep)
+ * Repeated "../" prefixes are collapsed so stored values stay forgiving.
+ */
+window.assetUrl = function (p) {
+    if (!p) return '';
+    const s = String(p).trim();
+    if (/^(https?:)?\/\//i.test(s) || /^data:/i.test(s)) return s;
+    if (s.charAt(0) === '/') return s;
+    return '../' + s.replace(/^(\.\.\/)+/, '').replace(/^\.\//, '');
+};
+
 // Mock portfolio holdings data
 const MOCK_HOLDINGS = [
     {
         token_name: "ODAI",
         sub: "ODEI AI",
-        img: "../assets/images/odai.webp",
+        img: "assets/images/odai.webp",
         tokens: "47000",
         balance: "14230",
         chainID: "solana",
@@ -19,7 +35,7 @@ const MOCK_HOLDINGS = [
     {
         token_name: "TAKEOVER",
         sub: "Takeover",
-        img: "../assets/images/takeover.webp",
+        img: "assets/images/takeover.webp",
         tokens: "8900",
         balance: "3820",
         chainID: "solana",
@@ -30,7 +46,7 @@ const MOCK_HOLDINGS = [
     {
         token_name: "OSO",
         sub: "Osobot",
-        img: "../assets/images/oso-_1_.webp",
+        img: "assets/images/oso-_1_.webp",
         tokens: "7500",
         balance: "5610",
         chainID: "solana",
@@ -41,7 +57,7 @@ const MOCK_HOLDINGS = [
     {
         token_name: "NOELCLAW",
         sub: "Noel Claw",
-        img: "../assets/images/noelclaw.webp",
+        img: "assets/images/noelclaw.png",
         tokens: "52000",
         balance: "1230",
         chainID: "solana",
@@ -52,7 +68,7 @@ const MOCK_HOLDINGS = [
     {
         token_name: "MLTL",
         sub: "Multilabel",
-        img: "../assets/images/mltl.webp",
+        img: "assets/images/mltl.png",
         tokens: "22500",
         balance: "4470",
         chainID: "solana",
@@ -63,30 +79,33 @@ const MOCK_HOLDINGS = [
 ];
 
 // Mock custom tokens (not on DexScreener)
+// NOTE: `pairAddress` is required by buildCustomItem() -> openTradeModal() in index.html,
+// and `sym` / `name` / `addr` are required by the custom-token search patch.
 const MOCK_CUSTOM_TOKENS = [
     {
-        name: "CVT",
+        name: "CoinVault",
         symbol: "CVT",
-        img: "../assets/images/download.jpeg",
+        img: "assets/images/cvt.png",
         priceUsd: 0.001,
         mcap: 1000000,
         chain: "solana",
-        ca: "5aYjJdXSobATG1rFbdBz8wd2jrJbHhNNbU1LbJKgYGV5"
+        ca: "5aYjJdXSobATG1rFbdBz8wd2jrJbHhNNbU1LbJKgYGV5",
+        pairAddress: "cvt_pair_address"
     }
 ];
 
 // Mock leaderboard data
 const MOCK_LEADERBOARD = {
     whales: [
-        { rank: 1, name: "WhaleMaster", img: "../assets/images/odai.webp", earned: "$127,450", is_user: false },
-        { rank: 2, name: "CryptoKing", img: "../assets/images/takeover.webp", earned: "$98,320", is_user: false },
-        { rank: 3, name: "MoonTrader", img: "../assets/images/oso-_1_.webp", earned: "$67,890", is_user: false },
-        { rank: 4, name: "DegenLord", img: "../assets/images/noelclaw.webp", earned: "$45,210", is_user: false },
-        { rank: 5, name: "TokenHunter", img: "../assets/images/mltl.webp", earned: "$32,100", is_user: false }
+        { rank: 1, name: "WhaleMaster", img: "assets/images/odai.webp", earned: "$127,450", is_user: false },
+        { rank: 2, name: "CryptoKing", img: "assets/images/takeover.webp", earned: "$98,320", is_user: false },
+        { rank: 3, name: "MoonTrader", img: "assets/images/oso-_1_.webp", earned: "$67,890", is_user: false },
+        { rank: 4, name: "DegenLord", img: "assets/images/noelclaw.png", earned: "$45,210", is_user: false },
+        { rank: 5, name: "TokenHunter", img: "assets/images/mltl.png", earned: "$32,100", is_user: false }
     ],
     user: {
         name: "memelord42",
-        img: "../assets/images/odai.webp",
+        img: "assets/images/odai.webp",
         earned: "$12,450",
         is_user: true
     }
@@ -141,7 +160,7 @@ window.MockAPI = {
     // Fetch custom tokens (replaces ./server/tokens.php)
     async fetchCustomTokens() {
         await new Promise(resolve => setTimeout(resolve, 100));
-        return MOCK_CUSTOM_TOKENS;
+        return MOCK_CUSTOM_TOKENS.map(t => ({ ...t }));
     },
 
     // Fetch leaderboard data (replaces ./server/leaderboard_data.php)
@@ -153,25 +172,61 @@ window.MockAPI = {
     // Get live price for a token (replaces DexScreener API calls for mock tokens)
     async getLivePrice(chainId, pairAddress) {
         await new Promise(resolve => setTimeout(resolve, 50));
-        
+
         // Find matching holding
         const holding = MOCK_HOLDINGS.find(h => h.pairAddress === pairAddress);
         if (holding) {
             const price = simulatePriceFluctuation(parseFloat(holding.priceUsd), 0.05);
             const change = (Math.random() - 0.5) * 10; // -5% to +5%
+            // NOTE: `url` must stay an absolute URL. The dashboard renders it via
+            // assetUrl(), which passes absolute URLs through untouched.
             return {
                 price,
                 change,
                 url: `https://dexscreener.com/${chainId}/${pairAddress}`
             };
         }
-        
+
         // Fallback for unknown tokens
         return {
             price: 0.001,
             change: (Math.random() - 0.5) * 10,
-            url: '#'
+            url: 'https://dexscreener.com/'
         };
+    },
+
+    /**
+     * Record a completed transaction locally (replaces api/saveTransact.php).
+     * Persists to localStorage so the launch flow has a real, inspectable record
+     * without a PHP backend.
+     */
+    async saveTransact(payload) {
+        await new Promise(resolve => setTimeout(resolve, 120));
+        const KEY = 'memelabs_transactions';
+        let list = [];
+        try {
+            const raw = localStorage.getItem(KEY);
+            if (raw) list = JSON.parse(raw) || [];
+        } catch (e) {
+            list = [];
+        }
+        list.unshift({ ...payload, savedAt: new Date().toISOString() });
+        try {
+            localStorage.setItem(KEY, JSON.stringify(list.slice(0, 50)));
+        } catch (e) {
+            console.warn('Could not persist transaction:', e);
+        }
+        return { success: true, count: list.length };
+    },
+
+    // Read locally recorded transactions
+    getTransactions() {
+        try {
+            const raw = localStorage.getItem('memelabs_transactions');
+            return raw ? (JSON.parse(raw) || []) : [];
+        } catch (e) {
+            return [];
+        }
     },
 
     // Get SOL price

@@ -9,9 +9,6 @@
 
   <link rel="stylesheet" href="assets/dashboard.css">
   <link rel="stylesheet" href="assets/profile.css">
-  <!-- Auth & Mock Data -->
-  <script src="../auth.js"></script>
-  <script src="api/mockData.js"></script>
 
   <link
     href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap"
@@ -22,17 +19,6 @@
 </head>
 
 <body>
-
-  <!-- Auth Protection - Must be first -->
-  <script>
-    if (!window.Auth || !window.Auth.isAuthenticated()) {
-      window.Auth && window.Auth.redirectToLogin ? window.Auth.redirectToLogin() : (window.top.location.hash = "#/login");
-    } else {
-      window.Auth.initUserUI();
-      window.Auth.setupLogoutButtons();
-    }
-  </script>
-
   <!-- Sidebar overlay for mobile -->
   <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()" style="display: none;"></div>
 

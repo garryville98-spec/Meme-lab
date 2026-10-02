@@ -3,11 +3,8 @@
 <head>
   <title>Memelabs — Portfolio</title>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="shortcut icon" href="../assets/images/Favicon&#32;1.png" type="image/x-icon">
+  <link rel="shortcut icon" href="assets/images/Favicon&#32;1.png" type="image/x-icon">
     <link rel="stylesheet" href="assets/dashboard.css">
-  <!-- Auth & Mock Data -->
-  <script src="../auth.js"></script>
-  <script src="api/mockData.js"></script>
 
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
@@ -154,20 +151,9 @@
 </style>
 </head>
 <body>
-
-  <!-- Auth Protection - Must be first -->
-  <script>
-    if (!window.Auth || !window.Auth.isAuthenticated()) {
-      window.Auth && window.Auth.redirectToLogin ? window.Auth.redirectToLogin() : (window.top.location.hash = "#/login");
-    } else {
-      window.Auth.initUserUI();
-      window.Auth.setupLogoutButtons();
-    }
-  </script>
-
 <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
 <aside class="sidebar" id="sidebar">
-  <a href="index.html" class="sb-logo"><img src="../assets/images/Memelabs&#32;Logo&#32;1.png" alt="Logo" onerror="this.style.display='none'"><span>Memelabs</span></a>
+  <a href="index.html" class="sb-logo"><img src="assets/images/Memelabs&#32;Logo&#32;1.png" alt="Logo" onerror="this.style.display='none'"><span>Memelabs</span></a>
   <nav class="sb-nav">
     <div class="sb-sec">Main</div>
     <a class="nav-btn" href="index.html"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Dashboard</a>
@@ -284,7 +270,7 @@ const holdings=[
   {name:"NOELCLAW",sub:"Noel Claw",img:"./assets/images/noelclaw.webp",value:1230,tokens:52000,change:-10.2},
   {name:"MLTL",sub:"Multilabel",img:"./assets/images/mltl.webp",value:4470,tokens:22500,change:5.0},
 ];
-// function coinRow(h){return`<tr><td><div class="coin-cell"><img src="../${h.img}" class="c-img" onerror="this.style.display='none'" alt="${h.name}"><div><div class="c-name">${h.name}</div><div class="c-sub">${h.sub||''}</div></div></div></td><td><div style="font-weight:600">$${h.value?.toLocaleString()}</div><div style="font-size:11px;color:var(--muted)">${h.tokens?.toLocaleString()} tokens</div></td><td>$${h.value?.toLocaleString()}</td><td><span class="${h.change>=0?'up':'dn'}">${h.change>=0?'↑':'↓'} ${Math.abs(h.change)}%</span></td><td><button class="btn-red">Sell</button></td></tr>`;}
+// function coinRow(h){return`<tr><td><div class="coin-cell"><img src="${h.img}" class="c-img" onerror="this.style.display='none'" alt="${h.name}"><div><div class="c-name">${h.name}</div><div class="c-sub">${h.sub||''}</div></div></div></td><td><div style="font-weight:600">$${h.value?.toLocaleString()}</div><div style="font-size:11px;color:var(--muted)">${h.tokens?.toLocaleString()} tokens</div></td><td>$${h.value?.toLocaleString()}</td><td><span class="${h.change>=0?'up':'dn'}">${h.change>=0?'↑':'↓'} ${Math.abs(h.change)}%</span></td><td><button class="btn-red">Sell</button></td></tr>`;}
 function drawChart(id){const c=document.getElementById(id);if(!c)return;c.width=c.parentElement.offsetWidth-40;c.height=56;const ctx=c.getContext('2d'),W=c.width,H=c.height;const pts=[.6,.55,.58,.52,.57,.61,.65,.62,.68,.72,.7,.75,.8,.78,.82,.88,.85,.9,.87,.93,1];const coords=pts.map((p,i)=>({x:(i/(pts.length-1))*W,y:H-p*(H-4)-2}));const g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'rgba(245,166,35,0.3)');g.addColorStop(1,'rgba(245,166,35,0)');ctx.beginPath();ctx.moveTo(coords[0].x,coords[0].y);coords.slice(1).forEach(p=>ctx.lineTo(p.x,p.y));ctx.lineTo(W,H);ctx.lineTo(0,H);ctx.closePath();ctx.fillStyle=g;ctx.fill();ctx.beginPath();ctx.moveTo(coords[0].x,coords[0].y);coords.slice(1).forEach(p=>ctx.lineTo(p.x,p.y));ctx.strokeStyle='#f5a623';ctx.lineWidth=2;ctx.lineJoin='round';ctx.stroke();}
 // const pt=document.getElementById('portTbl');
 // if(pt)pt.innerHTML=`<thead><tr><th>Token</th><th>Price</th><th>Balance</th><th>24h</th><th></th></tr></thead><tbody>${holdings.map(coinRow).join('')}</tbody>`;
@@ -292,15 +278,15 @@ const total=holdings.reduce((s,h)=>s+h.value,0);
 const ac=document.getElementById('allocChart');
 if(ac)ac.innerHTML=holdings.map(h=>`<div style="margin-bottom:10px;"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;"><span style="font-weight:600">${h.name}</span><span style="color:var(--muted)">${((h.value/total)*100).toFixed(1)}%</span></div><div style="background:rgba(255,255,255,.06);border-radius:999px;height:6px;overflow:hidden;"><div style="background:var(--gold);height:100%;width:${((h.value/total)*100).toFixed(1)}%;border-radius:999px;transition:width .5s;"></div></div></div>`).join('');
 const ps=document.getElementById('perfSummary');
-if(ps)ps.innerHTML=`<div style="display:flex;flex-direction:column;gap:10px;">${holdings.map(h=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);"><div style="display:flex;align-items:center;gap:8px;"><img src="../${h.img}" style="width:24px;height:24px;border-radius:50%;object-fit:cover" onerror="this.style.display='none'"><span style="font-size:13px;font-weight:600">${h.name}</span></div><span class="${h.change>=0?'up':'dn'}" style="font-size:13px;font-weight:700">${h.change>=0?'↑':'↓'} ${Math.abs(h.change)}%</span></div>`).join('')}</div>`;
+if(ps)ps.innerHTML=`<div style="display:flex;flex-direction:column;gap:10px;">${holdings.map(h=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);"><div style="display:flex;align-items:center;gap:8px;"><img src="${h.img}" style="width:24px;height:24px;border-radius:50%;object-fit:cover" onerror="this.style.display='none'"><span style="font-size:13px;font-weight:600">${h.name}</span></div><span class="${h.change>=0?'up':'dn'}" style="font-size:13px;font-weight:700">${h.change>=0?'↑':'↓'} ${Math.abs(h.change)}%</span></div>`).join('')}</div>`;
 setTimeout(()=>drawChart('portChart2'),50);
 </script>
 
 <script>
   async function updatePortfolioUI() {
     try {
-        // Use mock API instead of PHP backend
-        const data = await window.MockAPI.fetchPortfolio();
+        const response = await fetch(`./server/fetch_portfolio.php`);
+        const data = await response.json();
         
         const holdings = data.holdings || [];
         
@@ -382,41 +368,42 @@ const coinRow = (h, liveData) => {
         <td><span class="${changeClass}">${arrow} ${Math.abs(change)}%</span></td>
         <td style="text-align: right;">
             <div class="action-group">
-                <a href="../${liveData.url}" target="_blank" class="btn-icon view btn-trade-now" style="text-decoration:none"> Live Data 📊</a>
+                <a href="${liveData.url}" target="_blank" class="btn-icon view btn-trade-now" style="text-decoration:none"> Live Data 📊</a>
             </div>
         </td>
     </tr>`;
 };
 async function refreshHoldings() {
-    try {
-        // Use mock API instead of PHP backend
-        const data = await window.MockAPI.fetchPortfolio();
-        const holdings = data.holdings || [];
-        const ht = document.getElementById('holdingsContainer');
-        if (!ht) return;
+    const response = await fetch(`./server/fetch_portfolio.php`);
+    const dbData = await response.json();
+    const holdings = dbData.holdings || [];
+    // console.log("Fetched holdings from DB:", holdings);
+    const ht = document.getElementById('holdingsContainer');
+    if (!ht) return;
 
-        // Show loading state
-        ht.innerHTML = `<tbody><tr><td colspan="5" style="text-align:center; color:var(--gold);">Fetching Market Data...</td></tr></tbody>`;
+    // Show loading state
+    ht.innerHTML = `<tbody><tr><td colspan="5" style="text-align:center; color:var(--gold);">Fetching Market Data...</td></tr></tbody>`;
 
-        // Fetch all prices in parallel using mock API
-        const enrichedHoldings = await Promise.all(holdings.map(async (h) => {
-            const live = await window.MockAPI.getLivePrice(h.chainID, h.pairAddress);
-             if(!live || typeof live.price !== 'number'|| live.price <= 0) {
-                console.warn(`Live price data missing for ${h.token_name} (${h.chainID}, ${h.pairAddress}). Using fallback values.`);
-                return { ...h, live: { price: 0.001, change: 0, url: '#' } };
-            }
+    // Fetch all prices in parallel
+    const enrichedHoldings = await Promise.all(holdings.map(async (h) => {
+        const live = await getLivePrice(h.chainID, h.pairAddress);
+         if(!live || typeof live.price !== 'number'|| live.price <= 0) {
+            console.warn(`Live price data missing for ${h.token_name} (${h.chainID}, ${h.pairAddress}). Using fallback values.`);
+            return { ...h, live: { price: 0.001, change: 0, url: '#' } };
+        }
 
-            return { ...h, live };
-        }));
+        // console.log(`Live data for ${h.token_name}:`, live);
+        return { ...h, live };
+    }));
 
-        const totalVolume = enrichedHoldings.reduce((sum, item) => {
-            const tokenBalance = parseFloat(item.tokens) || 0;
-            const livePrice = parseFloat(item.live.price) || 0;
-            return sum + (tokenBalance * livePrice);
-        }, 0);
+    const totalVolume = enrichedHoldings.reduce((sum, item) => {
+        const tokenBalance = parseFloat(item.tokens) || 0;
+        const livePrice = parseFloat(item.live.price) || 0;
+        return sum + (tokenBalance * livePrice);
+    }, 0);
 
- //  document.getElementById("totalSpent").textContent  = totalVolume.toLocaleString(undefined, {minimumFractionDigits: 2}) + 'SOL';
-   document.getElementById("portfolioValue").textContent  = "$" + totalVolume.toLocaleString(undefined, {minimumFractionDigits: 2});
+//  document.getElementById("totalSpent").textContent  = totalVolume.toLocaleString(undefined, {minimumFractionDigits: 2}) + 'SOL';
+  document.getElementById("portfolioValue").textContent  = "$" + totalVolume.toLocaleString(undefined, {minimumFractionDigits: 2});
     // Render Table
     ht.innerHTML = `
          <thead><tr><th>Token</th><th>Price</th><th>Balance</th><th>24h</th><th></th></tr></thead>
@@ -427,9 +414,6 @@ async function refreshHoldings() {
     // Also update the top "Portfolio Value" with the live prices
     document.getElementById("holdingsEmpty").style.display = enrichedHoldings.length > 0 ? "none" : "block";
     const totalLiveValue = enrichedHoldings.reduce((sum, item) => sum + (item.balance * item.live.price), 0);
-    } catch (error) {
-        console.error("Failed to refresh holdings:", error);
-    }
 
 
     // Note: If 'balance' in DB is already USD, use your previous logic. 

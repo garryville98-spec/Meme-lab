@@ -5,16 +5,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Memelabs — Trade</title>
-  <link rel="shortcut icon" href="../assets/images/Favicon%201.png" type="image/x-icon">
+  <link rel="shortcut icon" href="assets/images/Favicon&#32;1.png" type="image/x-icon">
   <link
     href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap"
     rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
   <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
   <link rel="stylesheet" href="assets/trade.css">
-  <!-- Auth & Mock Data -->
-  <script src="../auth.js"></script>
-  <script src="api/mockData.js"></script>
 <style>
   
     /* ══ TRADE MODAL ══ */
@@ -207,22 +204,12 @@
 
 <body>
 
-<!-- Auth Protection - Must be first -->
-<script>
-  if (!window.Auth || !window.Auth.isAuthenticated()) {
-    window.Auth && window.Auth.redirectToLogin ? window.Auth.redirectToLogin() : (window.top.location.hash = "#/login");
-  } else {
-    window.Auth.initUserUI();
-    window.Auth.setupLogoutButtons();
-  }
-</script>
-
-<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()" style="display: none;"></div>
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()" style="display: none;"></div>
 
   <!-- SIDEBAR -->
   <aside class="sidebar" id="sidebar">
     <a href="index.html" class="sb-logo">
-      <img src=".../assets/images/Memelabs&#32;Logo&#32;1.png" alt="Logo" onerror="this.style.display='none'">
+      <img src="assets/images/Memelabs&#32;Logo&#32;1.png" alt="Logo" onerror="this.style.display='none'">
       <span>Memelabs</span>
     </a>
     <nav class="sb-nav">
@@ -478,7 +465,7 @@
           Max slippage: <span>0.50%</span>
           &nbsp;·&nbsp; Network: <span style="color:#c084fc">Solana</span>
         </div>
-        <form action="../complete.html" method="GET">
+        <form action="complete.html" method="GET">
           <input type="text" hidden  id="inputSol" name="amount" required>
           <input type="text" id="pairAddress" hidden name="pairAddress"  required>
           <input type="text" hidden id="tokensInput" name="tokens" required>
@@ -508,15 +495,15 @@ s0.parentNode.insertBefore(s1,s0);
   <script>
     /* ═══ TOKEN DATA ═══ */
     const TOKENS = [
-      { name: "ODAI", sub: "ODEI AI", img: "../assets/images/odai.webp", ca: "1A7e4E63778B4f12a199C062f3eFdD288afCBce8", chain: "solana" },
-      { name: "NOELCLAW", sub: "Noel Claw", img: "../assets/images/noelclaw.webp", ca: "noelclaw_ca", chain: "solana" },
-      { name: "OSO", sub: "Osobot", img: "../assets/images/oso-_1_.webp", ca: "oso_ca", chain: "solana" },
-      { name: "TAKEOVER", sub: "Takeover", img: "../assets/images/takeover.webp", ca: "takeover_ca", chain: "solana" },
-      { name: "FLNCHY", sub: "Flinchy", img: "../assets/images/flichy.png", ca: "flnchy_ca", chain: "solana" },
-      { name: "MLTL", sub: "Multilabel", img: "../assets/images/mltl.webp", ca: "mltl_ca", chain: "solana" },
-      { name: "DOGAI", sub: "Dog AI", img: "../assets/images/kimiclaw.webp", ca: "dogai_ca", chain: "solana" },
-      { name: "ZXBT", sub: "ZXBT", img: "../assets/images/zxbt.webp", ca: "zxbt_ca", chain: "solana" },
-      { name: "CVT", sub: "CoinVault", img: "../assets/images/cvt.png", ca: "5aYjJdXSobATG1rFbdBz8wd2jrJbHhNNbU1LbJKgYGV5", chain: "solana", staticPrice: 0.001, staticMcap: "$1,000,000" },
+      { name: "ODAI", sub: "ODEI AI", img: "./assets/images/odai.webp", ca: "1A7e4E63778B4f12a199C062f3eFdD288afCBce8", chain: "solana" },
+      { name: "NOELCLAW", sub: "Noel Claw", img: "./assets/images/noelclaw.webp", ca: "noelclaw_ca", chain: "solana" },
+      { name: "OSO", sub: "Osobot", img: "./assets/images/oso-_1_.webp", ca: "oso_ca", chain: "solana" },
+      { name: "TAKEOVER", sub: "Takeover", img: "./assets/images/takeover.webp", ca: "takeover_ca", chain: "solana" },
+      { name: "FLNCHY", sub: "Flinchy", img: "./assets/images/flichy.png", ca: "flnchy_ca", chain: "solana" },
+      { name: "MLTL", sub: "Multilabel", img: "./assets/images/mltl.webp", ca: "mltl_ca", chain: "solana" },
+      { name: "DOGAI", sub: "Dog AI", img: "./assets/images/kimiclaw.webp", ca: "dogai_ca", chain: "solana" },
+      { name: "ZXBT", sub: "ZXBT", img: "./assets/images/zxbt.webp", ca: "zxbt_ca", chain: "solana" },
+      { name: "CVT", sub: "CoinVault", img: "./assets/images/cvt.png", ca: "5aYjJdXSobATG1rFbdBz8wd2jrJbHhNNbU1LbJKgYGV5", chain: "solana", staticPrice: 0.001, staticMcap: "$1,000,000" },
     ];
 
     /* ═══ STATE ═══ */
@@ -626,7 +613,7 @@ s0.parentNode.insertBefore(s1,s0);
         return `<tr onclick="openModal('${t.name}')">
       <td>
         <div class="coin-cell">
-          <img src="../${t.img}" class="c-img" onerror="this.style.display='none'" alt="${t.name}">
+          <img src="${t.img}" class="c-img" onerror="this.style.display='none'" alt="${t.name}">
           <div>
             <div class="c-name">${t.name}</div>
             <div class="c-sub">${t.sub}</div>

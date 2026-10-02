@@ -9,9 +9,6 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
   <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
   <link rel="stylesheet" href="assets/dashboard.css">
-  <!-- Auth & Mock Data -->
-  <script src="../auth.js"></script>
-  <script src="api/mockData.js"></script>
 
   <style>
     /* ══ SEARCH BAR ══ */
@@ -375,16 +372,6 @@
 </head>
 <body>
 
-  <!-- Auth Protection - Must be first -->
-  <script>
-    if (!window.Auth || !window.Auth.isAuthenticated()) {
-      window.Auth && window.Auth.redirectToLogin ? window.Auth.redirectToLogin() : (window.top.location.hash = "#/login");
-    } else {
-      window.Auth.initUserUI();
-      window.Auth.setupLogoutButtons();
-    }
-  </script>
-
   <!-- Sidebar overlay for mobile -->
   <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()" style="display: none;"></div>
 
@@ -688,7 +675,7 @@
           Max slippage: <span>0.50%</span>
           &nbsp;·&nbsp; Network: <span style="color:#c084fc">Solana</span>
         </div>
-        <form action="../complete.html" method="GET">
+        <form action="complete.html" method="GET">
           <input type="text" hidden  id="inputSol" name="amount" required>
           <input type="text" id="pairAddress" hidden name="pairAddress"  required>
           <input type="text" hidden id="tokensInput" name="tokens" required>
@@ -737,8 +724,8 @@ s0.parentNode.insertBefore(s1,s0);
     // ];
 async function updatePortfolioUI() {
     try {
-        // Use mock API instead of PHP backend
-        const data = await window.MockAPI.fetchPortfolio();
+        const response = await fetch(`./server/fetch_portfolio.php`);
+        const data = await response.json();
         
         const holdings = data.holdings || [];
         
@@ -766,7 +753,7 @@ async function updatePortfolioUI() {
         document.getElementById("creatorEarnings").textContent = "$0.0";
 
     } catch (error) {
-        console.error("Failed to fetch portfolio data:", error);
+        console.error("Failed to scrape portfolio data:", error);
     }
 }
 
@@ -806,7 +793,7 @@ updatePortfolioUI();
     //       <tbody>
     //         ${holdings.map(h => `
     //           <tr>
-    //             <td><div class="ht-coin"><img src="../${h.img}" class="ht-img" alt="${h.name}" onerror="this.style.display='none'"><div><div class="ht-name">${h.name}</div><div class="ht-sub">${h.sub}</div></div></div></td>
+    //             <td><div class="ht-coin"><img src="${h.img}" class="ht-img" alt="${h.name}" onerror="this.style.display='none'"><div><div class="ht-name">${h.name}</div><div class="ht-sub">${h.sub}</div></div></div></td>
     //             <td><div class="ht-val">$${h.balance.toLocaleString()}</div><div class="ht-amount">${h.tokens.toLocaleString()} tokens</div></td>
     //             <td>${h.value}</td>
     //             <td><span class="${h.change >= 0 ? 'ht-pos' : 'ht-neg'}">${h.change >= 0 ? '↑' : '↓'} ${Math.abs(h.change)}%</span></td>
@@ -938,7 +925,7 @@ updatePortfolioUI();
           const sn = name.replace(/'/g,"\\'").replace(/"/g,'&quot;');
 
           return `<div class="db-dd-item">
-            <img src="../${img}" class="db-dd-img" onerror="this.src=''" alt="${sym}">
+            <img src="${img}" class="db-dd-img" onerror="this.src=''" alt="${sym}">
             <div class="db-dd-info">
               <div class="db-dd-name">${sym} <span style="font-size:11px;color:rgba(255,255,255,0.4);font-weight:400">${name !== sym ? name : ''}</span></div>
               <div class="db-dd-meta">
@@ -1175,53 +1162,54 @@ const coinRow = (h, liveData) => {
         <td><span class="${changeClass}">${arrow} ${Math.abs(change)}%</span></td>
         <td style="text-align: right;">
             <div class="action-group">
-                <a href="../${liveData.url}" target="_blank" class="btn-icon view btn-trade-now" style="text-decoration:none"> Live Data 📊</a>
+                <a href="${liveData.url}" target="_blank" class="btn-icon view btn-trade-now" style="text-decoration:none"> Live Data 📊</a>
             </div>
         </td>
     </tr>`;
 };
 async function refreshHoldings() {
-    try {
-        // Use mock API instead of PHP backend
-        const data = await window.MockAPI.fetchPortfolio();
-        const holdings = data.holdings || [];
-        const ht = document.getElementById('holdingsContainer');
-        if (!ht) return;
+    const response = await fetch(`./server/fetch_portfolio.php`);
+    const dbData = await response.json();
+    const holdings = dbData.holdings || [];
+    // console.log("Fetched holdings from DB:", holdings);
+    const ht = document.getElementById('holdingsContainer');
+    if (!ht) return;
 
-        // Show loading state
-        ht.innerHTML = `<tbody><tr><td colspan="5" style="text-align:center; color:var(--gold);">Fetching Market Data...</td></tr></tbody>`;
+    // Show loading state
+    ht.innerHTML = `<tbody><tr><td colspan="5" style="text-align:center; color:var(--gold);">Fetching Market Data...</td></tr></tbody>`;
 
-        // Fetch all prices in parallel using mock API
-        const enrichedHoldings = await Promise.all(holdings.map(async (h) => {
-            const live = await window.MockAPI.getLivePrice(h.chainID, h.pairAddress);
-            if(!live || typeof live.price !== 'number' || live.price <= 0) {
-                console.warn(`Live price data missing for ${h.token_name} (${h.chainID}, ${h.pairAddress}). Using fallback values.`);
-                return { ...h, live: { price: 0.001, change: 0, url: '#' } };
-            }
-            return { ...h, live };
-        }));
+    // Fetch all prices in parallel
+    const enrichedHoldings = await Promise.all(holdings.map(async (h) => {
+        const live = await getLivePrice(h.chainID, h.pairAddress);
+        if(!live || typeof live.price !== 'number'|| live.price <= 0) {
+            console.warn(`Live price data missing for ${h.token_name} (${h.chainID}, ${h.pairAddress}). Using fallback values.`);
+            return { ...h, live: { price: 0.001, change: 0, url: '#' } };
+        }
+        console.log(`Live data for ${h.token_name}:`, live);
+        return { ...h, live };
+    }));
 
-        const totalVolume = enrichedHoldings.reduce((sum, item) => {
-            const tokenBalance = parseFloat(item.tokens) || 0;
-            const livePrice = parseFloat(item.live.price) || 0;
-            return sum + (tokenBalance * livePrice);
-        }, 0);
+    const totalVolume = enrichedHoldings.reduce((sum, item) => {
+        const tokenBalance = parseFloat(item.tokens) || 0;
+        const livePrice = parseFloat(item.live.price) || 0;
+        return sum + (tokenBalance * livePrice);
+    }, 0);
 
-        document.getElementById("portfolioValue").textContent  = "$" + totalVolume.toLocaleString(undefined, {minimumFractionDigits: 2});
-        // Render Table
-        ht.innerHTML = `
-             <thead><tr><th>Token</th><th>Price</th><th>Balance</th><th>24h</th><th></th></tr></thead>
-            <tbody>
-                ${enrichedHoldings.map(item => coinRow(item, item.live)).join('')}
-            </tbody>`;
+ document.getElementById("portfolioValue").textContent  = "$" + totalVolume.toLocaleString(undefined, {minimumFractionDigits: 2});
+    // Render Table
+    ht.innerHTML = `
+         <thead><tr><th>Token</th><th>Price</th><th>Balance</th><th>24h</th><th></th></tr></thead>
+        <tbody>
+            ${enrichedHoldings.map(item => coinRow(item, item.live)).join('')}
+        </tbody>`;
 
-        // Also update the top "Portfolio Value" with the live prices
-        document.getElementById("holdingsEmpty").style.display = enrichedHoldings.length > 0 ? "none" : "block";
-        const totalLiveValue = enrichedHoldings.reduce((sum, item) => sum + (item.balance * item.live.price), 0);
+    // Also update the top "Portfolio Value" with the live prices
+    document.getElementById("holdingsEmpty").style.display = enrichedHoldings.length > 0 ? "none" : "block";
+    const totalLiveValue = enrichedHoldings.reduce((sum, item) => sum + (item.balance * item.live.price), 0);
 
-    } catch (error) {
-        console.error("Failed to refresh holdings:", error);
-    }
+
+    // Note: If 'balance' in DB is already USD, use your previous logic. 
+    // If 'balance' is the # of tokens, use: (item.balance * item.live.price)
 }
 
 refreshHoldings();
@@ -1233,13 +1221,11 @@ refreshHoldings();
   /* Custom on-platform tokens not listed on DexScreener */
 let CUSTOM_TOKENS = [];
 
-// Use mock API instead of PHP backend
-window.MockAPI.fetchCustomTokens().then(data => {
+fetch('./server/tokens.php')
+  .then(r => r.json())
+  .then(data => {
     CUSTOM_TOKENS = data.map(t => ({
       ...t,
-      sym:      t.symbol || t.sym,
-      name:     t.name   || t.symbol,
-      addr:     t.ca     || t.addr,
       priceUsd: parseFloat(t.priceUsd),
       mcap:     parseFloat(t.mcap),
     }));
@@ -1263,7 +1249,7 @@ window.MockAPI.fetchCustomTokens().then(data => {
 
     return `
       <div class="db-dd-item" style="border-left:2px solid #f5a623;">
-        <img src="../${t.img}" class="db-dd-img"
+        <img src="${t.img}" class="db-dd-img"
              onerror="this.src=''" alt="${t.sym}">
         <div class="db-dd-info">
           <div class="db-dd-name">
@@ -1359,7 +1345,7 @@ window.MockAPI.fetchCustomTokens().then(data => {
       const si = img.replace(/'/g, "\\'");
       const sn = name.replace(/'/g, "\\'").replace(/"/g, '&quot;');
       return `<div class="db-dd-item">
-        <img src="../${img}" class="db-dd-img" onerror="this.src=''" alt="${sym}">
+        <img src="${img}" class="db-dd-img" onerror="this.src=''" alt="${sym}">
         <div class="db-dd-info">
           <div class="db-dd-name">${sym}
             <span style="font-size:11px;color:rgba(255,255,255,0.4);font-weight:400">

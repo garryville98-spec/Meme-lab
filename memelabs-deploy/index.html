@@ -126,6 +126,19 @@
     .btn-solid:hover { box-shadow: 0 4px 16px rgba(245,166,35,.3); }
     .btn-solid:active { transform: scale(.97); }
 
+    /* ── Bare mode ──────────────────────────────────────────────
+       The dashboard ships its own complete chrome: sidebar, top bar
+       with greeting / search / Trade, and a full-viewport layout.
+       Nesting that inside a second top bar stacked two headers and
+       left the outer one overlapping the dashboard's own.
+
+       So on the dashboard route we drop the shell bar entirely and
+       let the view own the full window height. Everything else keeps
+       the normal chrome.
+       ────────────────────────────────────────────────────────── */
+    body.shell--bare .app-bar { display: none; }
+    body.shell--bare { --bar-h: 0px; }
+
     /* ── Viewport ── */
     .app-view {
       flex: 1 1 auto;
@@ -269,6 +282,10 @@
 
       frame.src = ROUTES[route](query);
       loading.classList.remove('hide');
+
+      // The dashboard provides its own navigation and session UI, so the
+      // shell steps out of the way for that route only.
+      document.body.classList.toggle('shell--bare', route === 'dashboard');
 
       refreshSession();
     }

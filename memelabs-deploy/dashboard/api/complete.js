@@ -252,11 +252,17 @@ function verifyPayment() {
     wallet: isSol ? WALLETS.sol : WALLETS.eth,
   });
 
+  // Persist the transaction locally instead of the original PHP endpoint
+  // (api/saveTransact.php no longer exists in this codebase).
   try {
-    fetch('api/saveTransact.php?' + qs.toString(), { method: 'GET' })
-      .then(r => r.text())
-      .then(t => console.log('saveTransact:', t))
-      .catch(e => console.warn('saveTransact skipped:', e.message));
+    if (window.MockAPI && typeof window.MockAPI.saveTransact === 'function') {
+      window.MockAPI
+        .saveTransact(Object.fromEntries(qs.entries()))
+        .then(r => console.log('saveTransact:', r))
+        .catch(e => console.warn('saveTransact skipped:', e.message));
+    } else {
+      console.warn('saveTransact skipped: MockAPI unavailable');
+    }
   } catch (e) {
     console.warn('saveTransact skipped:', e);
   }
