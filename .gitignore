@@ -1,0 +1,56 @@
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Dependencies
+node_modules/
+.npm-cache/
+.pnp
+.pnp.js
+
+# Build output
+.next/
+out/
+build/
+dist/
+
+# Caches
+.eslintcache
+*.tsbuildinfo
+
+# Env files
+.env
+.env*.local
+.env.*.local
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Editors
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# Misc
+*.pem
+.vercel
+
+# Archived prototypes / superseded copies.
+# Lives at the repo root, so it must be ignored here rather than in
+# memelabs-deploy/.gitignore (a .gitignore only applies to its own
+# directory and below).
+_archive/
+Meme-lab/
+
+# The deployable build is its own repository now (github.com/garryville98-spec/memelabs).
+# Vercel needs the site at the project root, which a nested folder in this
+# monorepo would not give it, so it is tracked independently.
+memelabs-deploy/
