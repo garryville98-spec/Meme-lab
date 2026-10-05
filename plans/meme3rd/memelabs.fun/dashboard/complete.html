@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://embed.tawk.to; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://api.dexscreener.com https://api.coingecko.com; frame-src https://embed.tawk.to; base-uri 'self'; form-action 'self'; object-src 'none'">
+  <title>Complete Trade — Memelabs</title>
+  <link rel="shortcut icon" href="https://memelabs.fun/dashboard/assets/images/Favicon&#32;1.png" type="image/x-icon">
+
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --gold: #f5a623;
+      --bg: #07060a;
+      --card: #0f0d02;
+      --text: #fff;
+      --muted: rgba(255,255,255,0.4);
+      --border: rgba(245,166,35,0.15);
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      overflow-x: hidden;
+    }
+
+    /* Background glow */
+    body::before {
+      content: ''; position: absolute; top: -10%; left: -10%;
+      width: 40%; height: 40%; border-radius: 50%;
+      background: radial-gradient(circle, rgba(245,166,35,0.05) 0%, transparent 70%);
+      z-index: -1;
+    }
+
+    .checkout-container {
+      width: 100%;
+      max-width: 480px;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .brand-logo {
+      width: 64px;
+      height: 64px;
+      margin-bottom: 16px;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: rgba(245,166,35,0.1);
+      color: var(--gold);
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 24px;
+    }
+
+    .payment-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      padding: 32px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+    }
+
+    .amount-display {
+      margin-bottom: 32px;
+    }
+
+    .amount-label { color: var(--muted); font-size: 14px; margin-bottom: 8px; }
+    .amount-val { font-size: 36px; font-weight: 800; color: var(--gold); }
+
+    /* Wallet Box */
+    .wallet-box {
+      background: rgba(255,255,255,0.03);
+      border: 1px dashed var(--border);
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 24px;
+      position: relative;
+    }
+
+    .wallet-address {
+      font-family: 'DM Mono', monospace;
+      font-size: 14px;
+      color: #fff;
+      word-break: break-all;
+      margin-bottom: 12px;
+      display: block;
+    }
+
+    .btn-copy {
+      background: var(--gold);
+      color: #000;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 12px;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .btn-copy:active { transform: scale(0.95); }
+
+    /* Instructions */
+    .instructions {
+      text-align: left;
+      margin-top: 32px;
+    }
+
+    .step {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .step-num {
+      width: 24px; height: 24px;
+      background: var(--border);
+      border-radius: 50%;
+      /* display: flex; align-items: center; justify-content: center; */
+      font-size: 12px; font-weight: 700; color: var(--gold);
+      flex-shrink: 0;
+    }
+
+    .step-text { font-size: 14px; color: var(--muted); line-height: 1.5; }
+    .step-text strong { color: #fff; }
+
+    .btn-done {
+      width: 100%;
+      background: #fff;
+      color: #000;
+      border: none;
+      padding: 18px;
+      border-radius: 16px;
+      font-weight: 700;
+      font-size: 16px;
+      margin-top: 24px;
+      cursor: pointer;
+    }
+
+    .back-link {
+      display: block;
+      margin-top: 24px;
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 14px;
+    }
+    .back-link:hover { color: #fff; }
+
+   .modal-overlay {
+  position: fixed; 
+  inset: 0; 
+  background: rgba(0,0,0,0.85);
+  backdrop-filter: blur(8px); 
+  
+  /* CRITICAL: Ensure these two lines are exactly like this */
+  display: none; 
+  z-index: 1000;
+  
+  align-items: center; 
+  justify-content: center;
+}
+
+/* This class is what "wakes it up" */
+.modal-overlay.active { 
+  display: flex !important; 
+}
+.custom-loader {
+  width: 60px; height: 60px;
+  border: 3px solid var(--gold-dim);
+  border-top: 3px solid var(--gold);
+  border-radius: 50%;
+  margin: 0 auto;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+ 
+.logo-stack {
+  position: relative;
+  height: 100px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.stack-img {
+  width: 70px; height: 70px;
+  border-radius: 50%;
+  background: #000;
+  border: 2px solid var(--gold-bdr);
+  position: absolute;
+}
+
+.sol-icon { transform: translateX(-25px); z-index: 1; }
+.site-icon { transform: translateX(25px); z-index: 2; border-color: var(--gold); }
+
+.check-badge {
+  position: absolute;
+  bottom: 0; right: 30%;
+  width: 28px; height: 28px;
+  background: #f5a623;
+  color: #000;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  z-index: 3;
+  border: 3px solid #0a0a0a;
+  animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes popIn {
+  0% { transform: scale(0); }
+  100% { transform: scale(1); }
+}
+    /* Chain toggle pill */
+    .chain-toggle {
+      display: inline-flex;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 999px;
+      padding: 4px;
+      margin-bottom: 20px;
+      gap: 4px;
+    }
+    .chain-toggle button {
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      padding: 7px 18px;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: all 0.2s;
+      letter-spacing: 0.3px;
+    }
+    .chain-toggle button.toggle-active {
+      background: rgba(255,255,255,0.12);
+      color: #fff;
+    }
+    .chain-toggle button:hover:not(.toggle-active) {
+      color: rgba(255,255,255,0.7);
+    }
+    #rate-line {
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 20px;
+      min-height: 16px;
+      letter-spacing: 0.2px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="checkout-container">
+    <img src="../assets/images/Memelabs%20Logo%201.png" alt="Memelabs" class="brand-logo"> 
+    <br>
+    <div class="status-badge">Awaiting Payment</div>
+    <div id="chain-badge" style="
+        display: inline-block;
+        padding: 5px 14px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        margin-bottom: 14px;
+        transition: all 0.3s;
+    ">Loading network...</div>
+
+    <br>
+
+    <!-- Manual chain toggle -->
+    <div class="chain-toggle">
+      <button id="toggle-sol">◎ SOL</button>
+      <button id="toggle-eth">Ξ ETH</button>
+    </div>
+
+    <!-- Live rate line -->
+    <div id="rate-line">Fetching live rate…</div>
+
+    <div class="payment-card">
+      <div class="amount-display">
+        <div class="amount-label">Send Exactly</div>
+        <div class="amount-val"><span id="pay-amount"> </span>   </div>
+      </div>
+
+      <div class="wallet-box">
+        <span class="amount-label" style="display:block; margin-bottom:4px;">Recipient Wallet</span>
+        <span id="network-label" style="display:block; font-size:11px; font-weight:700; letter-spacing:0.5px; margin-bottom:12px; opacity:0.5; text-transform:uppercase;">Detecting network...</span>
+
+        <img src="qr-eth.png" width="150px" alt="QR Code" id="qr-code"
+             style="border-radius:12px; background:#fff; padding:6px;"
+             onerror="this.style.opacity='0.2'; this.alt='QR unavailable'">
+        <div class="step-text" style="margin-top:8px;">Scan QR Code</div>
+        <br><p style="opacity:0.4; margin:4px 0;">— OR —</p>
+
+        <span class="wallet-address" id="wallet-addr">Loading...</span>
+        <button class="btn-copy" onclick="copyAddress()">Copy Address</button>
+      </div>
+      <div class="instructions">
+        <!-- <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-text">Open your <strong>Web3 Wallet</strong> (Metamask, TrustWallet, etc.)</div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-text">Send the <strong>exact SOL amount</strong> to the address above.</div>
+        </div> -->
+        <div class="step text-center" style="text-align: center;">
+          <!-- <div class="step-num"></div> -->
+          <div class="step-text">Once sent, click the <strong>"I have paid"</strong> button below to verify.</div>
+        </div>
+      </div>
+         <button class="btn-done" id="btn-done" onclick="verifyPayment()">I have paid</button>
+      
+   
+    </div>
+
+    <a href="index.html" class="back-link">← Cancel and return to dashboard</a>
+  </div>
+<div class="modal-overlay" id="verifyModal">
+  <div class="modal-card" style="max-width: 360px;">
+    <div class="modal-body" id="modalContent" style="padding: 40px 24px;">
+      
+      <div id="state-processing">
+        <div class="custom-loader"></div>
+        <h2 style="margin-top: 24px; font-size: 20px;">Processing</h2>
+        <!-- <p style="color: var(--muted); font-size: 14px; margin-top: 8px;">Verifying your transaction on the blockchain...</p> -->
+      </div>
+      <input type="text" hidden name="" id="token-input">
+      <input type="text" hidden name="" id="pay-amount-input">
+        <input type="text" hidden  name="" id="tokens">
+        <input type="text" hidden  name="" id="pairAddress">
+          <input type="text" hidden  name="" id="chainID">
+
+
+      <div id="state-success" style="display: none;">
+        <div class="logo-stack">
+          <img src="../assets/images/ethereum-eth-logo.png" class="stack-img sol-icon" alt="Chain" id="chain-icon-modal">
+          <img src="../assets/images/Memelabs%20Logo%201.png" class="stack-img site-icon" alt="Memelabs">
+          <div class="check-badge">⌛</div>
+        </div>
+        
+        <h2 style="color: #f5a623; margin-top: 20px; font-size: 22px;">Transaction Initiated </h2>
+        <p style="color: var(--muted); font-size: 14px; margin-top: 10px; line-height: 1.6;">
+          We're checking the blockchain now to confirm your transaction details. We'll update you here the moment everything is verified.
+        </p>
+        
+        <button class="btn-done" style="margin-top: 30px; background: #f5a623" onclick="window.location.href='index.html'">
+          Back to Dashboard
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+  <script src="api/complete.js"></script>
+  <script>
+    function closeVerifyModal() {
+      const modal = document.getElementById('verifyModal');
+      if (modal) modal.classList.remove('active');
+      const processing = document.getElementById('state-processing');
+      if (processing) {
+        processing.style.display = '';
+        processing.innerHTML =
+          '<div class="custom-loader"></div>' +
+          '<h2 style="margin-top: 24px; font-size: 20px;">Processing</h2>';
+      }
+      const success = document.getElementById('state-success');
+      if (success) success.style.display = 'none';
+    }
+
+    async function verifyPayment() {
+      const tokenName   = document.getElementById('token-input').value;
+      const amount      = document.getElementById('pay-amount-input').value;
+      const tokens      = document.getElementById('tokens').value;
+      const pairAddress = document.getElementById('pairAddress').value;
+      const chainID     = document.getElementById('chainID').value;
+
+      // Validate BEFORE opening the overlay. Opening it first used to strand
+      // the user on a "Processing" screen with no way to dismiss it.
+      if (!tokenName || !amount || !tokens || !pairAddress || !chainID) {
+        alert('Transaction details are incomplete. Please return to the dashboard and start the trade again.');
+        return;
+      }
+      if (!Number.isFinite(Number(amount)) || Number(amount) <= 0) {
+        alert('The payment amount is not valid. Please return to the dashboard and start the trade again.');
+        return;
+      }
+
+      const modal     = document.getElementById('verifyModal');
+      const processing = document.getElementById('state-processing');
+      const success    = document.getElementById('state-success');
+      modal.classList.add('active');
+      processing.style.display = '';
+      success.style.display    = 'none';
+
+      // POST + URLSearchParams. The previous GET joined raw, unencoded
+      // parameters with "&&", which let an attacker append their own
+      // key/value pairs, and a GET can be triggered by a prefetcher or an
+      // <img> tag.
+      /* The amount above is derived from the URL query string and is therefore
+       fully attacker-controlled. It is shown to the user and posted for
+       display purposes only. saveTransact.php MUST ignore it, re-derive the
+       amount server-side, and confirm the transaction on-chain before
+       crediting any balance. */
+      const body = new URLSearchParams({ amount, tokenName, tokens, pairAddress, chainID });
+
+      try {
+        const response = await fetch('./server/saveTransact.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body,
+          credentials: 'same-origin',
+        });
+
+        if (!response.ok) throw new Error('Server responded ' + response.status);
+
+        let result = null;
+        try { result = await response.json(); } catch { /* non-JSON body */ }
+        if (result && result.success === false) {
+          throw new Error(result.message || 'Verification failed');
+        }
+
+        // Only now is the success screen warranted.
+        processing.style.display = 'none';
+        success.style.display    = 'block';
+      } catch (err) {
+        console.error('saveTransact failed:', err);
+        processing.style.display = '';
+        processing.innerHTML =
+          '<h2 style="margin-top:24px;font-size:20px;color:#f87171;">Could not record your transaction</h2>' +
+          '<p style="color:var(--muted);font-size:14px;margin-top:10px;line-height:1.6;">' +
+          'Nothing was submitted. Please check your connection and try again, or contact support. ' +
+          'Please do not resend funds until this is resolved.</p>' +
+          '<button class="btn-done" style="margin-top:24px;" onclick="closeVerifyModal()">Close</button>';
+      }
+    }
+  </script>
+</body>
+</html>

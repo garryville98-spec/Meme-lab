@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://embed.tawk.to; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://api.dexscreener.com https://api.coingecko.com; frame-src https://embed.tawk.to; base-uri 'self'; form-action 'self'; object-src 'none'">
+  <title>Memelabs — Dashboard</title>
+  <link rel="shortcut icon" href="../assets/images/Favicon%201.png" type="image/x-icon">
+
+  <link rel="stylesheet" href="assets/dashboard.css">
+  <link rel="stylesheet" href="assets/profile.css">
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+
+</head>
+
+<body>
+  <!-- Sidebar overlay for mobile -->
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()" style="display: none;"></div>
+
+  <!-- ── SIDEBAR ── -->
+  <aside class="sidebar" id="sidebar">
+    <a href="index.html" class="sb-logo">
+      <img src="../assets/images/Memelabs%20Logo%201.png" alt="Logo">
+      <span>Memelabs</span>
+    </a>
+
+    <nav class="sb-nav">
+      <div class="sb-section-label">Main</div>
+      <a class="sb-link " href="index.html">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="7" height="7" />
+          <rect x="14" y="3" width="7" height="7" />
+          <rect x="3" y="14" width="7" height="7" />
+          <rect x="14" y="14" width="7" height="7" />
+        </svg>
+        Dashboard
+      </a>
+      <a class="sb-link" href="trade.html">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="1" x2="12" y2="23" />
+          <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+        </svg>
+        Trade
+      </a>
+      <a class="sb-link" href="portfolio.html">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path
+            d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+        </svg>
+        Portfolio
+      </a>
+      <!-- <a class="sb-link" href="#">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+        Analytics
+      </a> -->
+
+      <div class="sb-section-label">Earn</div>
+      <a class="sb-link" href="launch.html">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10" />
+          <line x1="12" y1="8" x2="12" y2="16" />
+          <line x1="8" y1="12" x2="16" y2="12" />
+        </svg>
+        Launch Token
+        <span class="sb-badge">New</span>
+      </a>
+      <!-- <a class="sb-link" href="#">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Referrals
+      </a> -->
+      <a class="sb-link" href="leaderboard.html">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <polygon
+            points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+        Leaderboard
+      </a>
+
+      <div class="sb-section-label">Account</div>
+      <a class="sb-link  " href="withdraw.html">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        Withdraw
+        
+      </a>
+      <a class="sb-link active">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="8" r="4" />
+          <path d="M6 20v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2" />
+        </svg>
+        Profile
+      </a>
+      <!-- <a class="sb-link" href="./settings.html">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Settings
+      </a> -->
+      <a class="sb-link" style="color:var(--red);" onclick="logout()">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+          <polyline points="16 17 21 12 16 7" />
+          <line x1="21" y1="12" x2="9" y2="12" />
+        </svg>
+        Sign out
+      </a>
+    </nav>
+
+    <div class="sb-footer">
+      <div class="sb-user">
+        <div class="sb-avatar text-uppper-case" id="sb-avatar"></div>
+        <div>
+          <div class="sb-username" id="sb-username">
+            <svg width="24" height="24" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg" stroke="#f5a623">
+
+              <g class="spinner">
+                <circle class="circle" cx="25" cy="25" r="20" fill="none" stroke-width="6"></circle>
+              </g>
+            </svg>
+
+          </div>
+          <div class="sb-wallet" id="sb-wallet">
+
+            <svg width="24" height="6" viewBox="0 0 24 6" xmlns="http://www.w3.org/2000/svg" fill="#f5a623">
+
+              <circle class="dot" cx="3" cy="3" r="3" />
+              <circle class="dot dot2" cx="12" cy="3" r="3" />
+              <circle class="dot dot3" cx="21" cy="3" r="3" />
+            </svg>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <button class="menu-btn" onclick="toggleSidebar()">
+          <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="6" x2="21" y2="6" />
+            <line x1="3" y1="12" x2="21" y2="12" />
+            <line x1="3" y1="18" x2="21" y2="18" />
+          </svg>
+        </button>
+
+      </div>
+      <div class="topbar-greeting">Account <span>Settings</span> </div>
+    </div>
+
+    <div class="content">
+      <div class="profile-header fade-in">
+        <div class="profile-pic-large" id="big-avatar">?</div>
+        <div class="profile-info">
+          <h1 id="display-name">Loading...</h1> <span style="display: none;" id="top_bar_username"></span>
+          <p id="display-wallet">0x0000...0000</p>
+        </div>
+      </div>
+
+      <div class="settings-grid">
+        <div class="panel fade-in">
+          <div class="panel-header">
+            <div class="panel-title">Personal Details</div>
+          </div>
+          <div style="padding: 24px;">
+            <div class="input-group">
+              <label>Username</label>
+              <input type="text" id="input-username" placeholder="Enter username">
+            </div>
+            <div class="input-group">
+              <label>Email Address</label>
+              <input type="email" id="input-email" readonly placeholder="email@example.com">
+            </div>
+            <button class="btn-save" onclick="updateProfile()">Update Profile</button>
+          </div>
+        </div>
+
+        <div class="panel fade-in">
+          <div class="panel-header">
+            <div class="panel-title">Account Stats</div>
+          </div>
+          <div style="padding: 24px;">
+            <div class="pm-item" style="margin-bottom: 15px;">
+              <div class="pm-label">Account Age</div>
+              <div class="pm-value" id="acc-age">-- days</div>
+            </div>
+            <!-- <div class="pm-item">
+              <div class="pm-label">Total Referrals</div>
+              <div class="pm-value" id="ref-count">0</div>
+            </div> -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!--Start of Tawk.to Script-->
+<script type="text/javascript">
+var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+(function(){
+var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+s1.async=true;
+s1.src='https://embed.tawk.to/69ef04d5f7613d1c38f451f3/1jn6qlpnc';
+s1.charset='UTF-8';
+s1.setAttribute('crossorigin','*');
+s0.parentNode.insertBefore(s1,s0);
+})();
+</script>
+<!--End of Tawk.to Script-->
+  <script>
+
+    /* ══ SIDEBAR TOGGLE ══ */
+    function toggleSidebar() {
+      const sb = document.getElementById("sidebar");
+      const overlay = document.getElementById("sidebarOverlay");
+      const open = sb.classList.toggle("open");
+      overlay.style.display = open ? "block" : "none";
+    }
+
+  </script>
+
+  <script src="api/profile.js"></script>
+  <script src="api/user.js"></script>
+
+</body>
+
+</html>
