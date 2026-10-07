@@ -342,6 +342,7 @@
         <div class="custom-loader"></div>
         <h2 style="margin-top: 24px; font-size: 20px;">Processing</h2>
         <!-- <p style="color: var(--muted); font-size: 14px; margin-top: 8px;">Verifying your transaction on the blockchain...</p> -->
+        <button class="btn-done" style="margin-top: 24px; background: transparent; color: var(--muted); border: 1px solid var(--border);" onclick="closeVerifyModal()">Cancel</button>
       </div>
       <input type="text" hidden name="" id="token-input">
       <input type="text" hidden name="" id="pay-amount-input">
@@ -372,15 +373,29 @@
 </div>
   <script src="api/complete.js"></script>
   <script>
+    // Shared state for the in-flight verification request so the
+    // modal can always be dismissed, even while the request runs.
+    let verifyController = null;
+    let verifyCancelled  = false;
+
+    const PROCESSING_HTML =
+      '<div class="custom-loader"></div>' +
+      '<h2 style="margin-top: 24px; font-size: 20px;">Processing</h2>' +
+      '<button class="btn-done" style="margin-top:24px;background:transparent;' +
+      'color:var(--muted);border:1px solid var(--border);" ' +
+      'onclick="closeVerifyModal()">Cancel</button>';
+
     function closeVerifyModal() {
       const modal = document.getElementById('verifyModal');
       if (modal) modal.classList.remove('active');
+      // Abort any in-flight verification so a late response can't
+      // flip a closed modal back open.
+      verifyCancelled = true;
+      if (verifyController) { verifyController.abort(); verifyController = null; }
       const processing = document.getElementById('state-processing');
       if (processing) {
         processing.style.display = '';
-        processing.innerHTML =
-          '<div class="custom-loader"></div>' +
-          '<h2 style="margin-top: 24px; font-size: 20px;">Processing</h2>';
+        processing.innerHTML = PROCESSING_HTML;
       }
       const success = document.getElementById('state-success');
       if (success) success.style.display = 'none';
@@ -409,6 +424,7 @@
       const success    = document.getElementById('state-success');
       modal.classList.add('active');
       processing.style.display = '';
+      processing.innerHTML    = PROCESSING_HTML;
       success.style.display    = 'none';
 
       // POST + URLSearchParams. The previous GET joined raw, unencoded
@@ -422,12 +438,20 @@
        crediting any balance. */
       const body = new URLSearchParams({ amount, tokenName, tokens, pairAddress, chainID });
 
+      // Hard timeout plus an abortable request: a hanging server must
+      // not strand the user on the "Processing" screen forever, and
+      // the Cancel button aborts the request when the modal is closed.
+      verifyController = new AbortController();
+      verifyCancelled  = false;
+      const timer = setTimeout(() => verifyController.abort(), 15000);
+
       try {
         const response = await fetch('./server/saveTransact.php', {
           method: 'POST',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
           body,
           credentials: 'same-origin',
+          signal: verifyController.signal,
         });
 
         if (!response.ok) throw new Error('Server responded ' + response.status);
@@ -443,6 +467,7 @@
         success.style.display    = 'block';
       } catch (err) {
         console.error('saveTransact failed:', err);
+        if (verifyCancelled) return; // user dismissed the modal — nothing to show
         processing.style.display = '';
         processing.innerHTML =
           '<h2 style="margin-top:24px;font-size:20px;color:#f87171;">Could not record your transaction</h2>' +
@@ -450,6 +475,9 @@
           'Nothing was submitted. Please check your connection and try again, or contact support. ' +
           'Please do not resend funds until this is resolved.</p>' +
           '<button class="btn-done" style="margin-top:24px;" onclick="closeVerifyModal()">Close</button>';
+      } finally {
+        clearTimeout(timer);
+        verifyController = null;
       }
     }
   </script>

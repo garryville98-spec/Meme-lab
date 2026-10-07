@@ -8,6 +8,7 @@ const state = {
     ethPerSol:    null,     // live rate: how many ETH = 1 SOL
     activeChain: 'sol',     // 'sol' | 'eth'  — current user selection
     wallets:     {},        // { sol_address, eth_address }
+    walletsLoaded: false,   // whether the wallet fetch has settled
 };
 
 function isSolanaChain(chainID) {
@@ -15,9 +16,22 @@ function isSolanaChain(chainID) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Fetch with a hard timeout — a hanging endpoint must never wedge the page
+// ─────────────────────────────────────────────────────────────────────────────
+async function fetchWithTimeout(url, options = {}, timeoutMs = 8000) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+        return await fetch(url, { ...options, signal: controller.signal });
+    } finally {
+        clearTimeout(timer);
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Boot
 // ─────────────────────────────────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', async () => {
+document.addEventListener('DOMContentLoaded', () => {
     const p = new URLSearchParams(window.location.search);
 
     /* Guard the amount: parseFloat('abc') is NaN, and 0/negatives are also
@@ -34,14 +48,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('pairAddress').value   = p.get('pairAddress')  || '';
     document.getElementById('chainID').value       = p.get('chainID')      || '';
 
-    // kick off both fetches in parallel
-    await Promise.all([
-        fetchWallets(),
-        fetchRate(),
-    ]);
-
+    // Render immediately so the page is never left blank while the
+    // network requests run, then re-render once the data arrives.
+    // Awaiting the fetches here used to freeze the page whenever
+    // CoinGecko or the payment-config endpoint hung.
     renderChain(state.activeChain);
     attachToggle();
+
+    Promise.all([
+        fetchWallets(),
+        fetchRate(),
+    ]).then(() => renderChain(state.activeChain));
 });
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -49,15 +66,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 // ─────────────────────────────────────────────────────────────────────────────
 async function fetchWallets() {
     try {
-        const res  = await fetch('server/get_payment_config.php');
+        const res  = await fetchWithTimeout('server/get_payment_config.php');
         if (!res.ok) throw new Error('Server responded ' + res.status);
         const data = await res.json();
         state.wallets = {
             sol: data.sol_address || data.wallet_address || '',
             eth: data.eth_address || data.wallet_address || '',
         };
+        state.walletsLoaded = true;
     } catch {
         state.wallets = { sol: 'Error loading address', eth: 'Error loading address' };
+        state.walletsLoaded = true;
     }
 }
 
@@ -67,7 +86,7 @@ async function fetchWallets() {
 async function fetchRate() {
     const rateEl = document.getElementById('rate-line');
     try {
-        const res  = await fetch(
+        const res  = await fetchWithTimeout(
             'https://api.coingecko.com/api/v3/simple/price?ids=solana,ethereum&vs_currencies=usd'
         );
         if (!res.ok) throw new Error('Server responded ' + res.status);
@@ -99,31 +118,27 @@ function renderChain(chain) {
 
     /* ── Amount ── */
     let displayAmount, displaySymbol;
+    const rateReady = isSol || state.ethPerSol !== null;
     if (isSol) {
         displayAmount  = state.solAmount.toFixed(4);
         displaySymbol  = 'SOL';
+    } else if (state.ethPerSol !== null) {
+        displayAmount  = (state.solAmount * state.ethPerSol).toFixed(6);
+        displaySymbol  = 'ETH';
     } else {
-        if (state.ethPerSol !== null) {
-            displayAmount  = (state.solAmount * state.ethPerSol).toFixed(6);
-            displaySymbol  = 'ETH';
-        } else {
-            document.getElementById('pay-amount').textContent = 'Exchange rate unavailable';
-            document.getElementById('pay-amount-input').value = '';
-            document.getElementById('toggle-eth').classList.remove('toggle-active');
-            document.getElementById('network-label').textContent =
-                'Ethereum unavailable — switch back to Solana to pay';
-            const addrEl = document.getElementById('wallet-addr');
-            if (addrEl) { addrEl.textContent = ''; addrEl.style.color = '#f87171'; }
-            const qrEl = document.getElementById('qr-code');
-            if (qrEl) qrEl.remove();
-            document.getElementById('btn-done').disabled = true;
-            return;
-        }
+        /* Rate unavailable: the wallet must still be shown — only the
+           converted amount is unknown. Blanking the wallet or removing
+           the QR here used to make the page look broken (and permanently
+           deleted the QR element) whenever CoinGecko was unreachable. */
+        displayAmount  = '—';
+        displaySymbol  = 'ETH';
     }
     document.getElementById('pay-amount').textContent  = `${displayAmount} ${displaySymbol}`;
     // keep hidden input updated so verifyPayment() sends the right amount
-    document.getElementById('pay-amount-input').value  = displayAmount;
-    document.getElementById('btn-done').disabled = false;
+    document.getElementById('pay-amount-input').value  = rateReady ? displayAmount : '';
+    // The exact ETH amount can't be computed without the live rate, so
+    // verification stays disabled until it loads.
+    document.getElementById('btn-done').disabled = !rateReady;
 
     /* ── Chain badge ── */
     const badge = document.getElementById('chain-badge');
@@ -135,14 +150,20 @@ function renderChain(chain) {
 
     /* ── Network label inside wallet box ── */
     const netLabel = document.getElementById('network-label');
-    if (netLabel) netLabel.textContent = isSol ? 'Solana (SOL) Wallet' : 'Ethereum (ETH) Wallet';
+    if (netLabel) {
+        netLabel.textContent = isSol
+            ? 'Solana (SOL) Wallet'
+            : (state.ethPerSol !== null
+                ? 'Ethereum (ETH) Wallet'
+                : 'Ethereum (ETH) Wallet — rate unavailable');
+    }
 
     /* ── Wallet address ── */
     const addrEl = document.getElementById('wallet-addr');
     if (addrEl) {
         const addr = isSol ? state.wallets.sol : state.wallets.eth;
-        addrEl.textContent = addr || 'Address unavailable';
-        addrEl.style.color = addr ? '#fff' : '#f87171';
+        addrEl.textContent = addr || (state.walletsLoaded ? 'Address unavailable' : 'Loading...');
+        addrEl.style.color = addr ? '#fff' : (state.walletsLoaded ? '#f87171' : 'var(--muted)');
     }
 
     /* ── QR code ── */
@@ -152,8 +173,9 @@ function renderChain(chain) {
     const qr = document.getElementById('qr-code');
     if (qr) {
         qr.onerror = function () { this.style.display = 'none'; };
+        qr.style.display = '';
         qr.src = `${isSol ? 'qr-sol' : 'qr-eth'}.png`;
-        qr.alt = `${displaySymbol} QR Code`;
+        qr.alt = `${isSol ? 'SOL' : 'ETH'} QR Code`;
     }
 
     /* ── Modal chain icon ── */
